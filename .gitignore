@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Secretos
+.env
+
+# Datos y resultados pesados
+dataset/data/
+results/data_results/

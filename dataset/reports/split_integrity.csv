@@ -1,0 +1,14 @@
+check,result,detail
+case_overlap_dev_train,PASS,0
+case_overlap_dev_test,PASS,0
+case_overlap_train_test,PASS,0
+dev_cases,INFO,25
+dev_windows,INFO,423
+train_cases,INFO,2994
+train_windows,INFO,80933
+test_cases,INFO,149
+test_windows,INFO,3457
+duplicate_window_ids,PASS,0
+cases_out_of_temporal_order,FAIL,526
+cases_with_equal_adjacent_times,INFO,526
+cases_with_decreasing_times,WARN,0

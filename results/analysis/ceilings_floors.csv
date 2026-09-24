@@ -1,0 +1,2 @@
+﻿n_windows,human_consensus,human_plausible,floor_always_no_action,floor_previous_action,floor_random_expected,class_distribution
+3424,0.5698014018691588,0.8162967289719626,0.27132009345794394,0.3247663551401869,0.23008167334483362,"{'reduce_hypnotic': 451, 'increase_opioid': 822, 'no_action': 929, 'reduce_opioid': 934, 'increase_hypnotic': 288}"

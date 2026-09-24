@@ -1,0 +1,10 @@
+
+===== FIX consistency gemini-3.1-pro-preview (gemini) =====
+model=gemini-3.1-pro-preview backend=gemini split=test windows=100
+
+accuracy: 0.3000 (100 windows) · invalid: 0 · errors: 0
+mean self-consistency: 0.9833
+accuracy by difficulty: {'hard': 0.28, 'easy': 0.15, 'medium': 0.364}
+accuracy by class: {'no_action': 0.375, 'reduce_hypnotic': 0.643, 'increase_hypnotic': 0.4, 'reduce_opioid': 0.045, 'increase_opioid': 0.222}
+results -> C:\Users\Ramsés\Desktop\Proyectos\dataset_anesllm\results\gemini-3.1-pro-preview_repeats3\test.jsonl
+summary -> C:\Users\Ramsés\Desktop\Proyectos\dataset_anesllm\results\gemini-3.1-pro-preview_repeats3\summary.json

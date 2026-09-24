@@ -1,0 +1,293 @@
+variable,type,description
+BIS_current,signal,Current value of bispectral index (0-100) over the window
+BIS_max,signal,Maximum of bispectral index (0-100) over the window
+BIS_mean,signal,Mean of bispectral index (0-100) over the window
+BIS_min,signal,Minimum of bispectral index (0-100) over the window
+BIS_slope,signal,Slope of bispectral index (0-100) over the window
+BIS_trend,signal,Trend of bispectral index (0-100) over the window
+DBP_current,signal,Current value of diastolic blood pressure (mmHg) over the window
+DBP_max,signal,Maximum of diastolic blood pressure (mmHg) over the window
+DBP_mean,signal,Mean of diastolic blood pressure (mmHg) over the window
+DBP_min,signal,Minimum of diastolic blood pressure (mmHg) over the window
+DBP_slope,signal,Slope of diastolic blood pressure (mmHg) over the window
+DBP_trend,signal,Trend of diastolic blood pressure (mmHg) over the window
+EtCO2_current,signal,Current value of end-tidal CO2 (mmHg) over the window
+EtCO2_max,signal,Maximum of end-tidal CO2 (mmHg) over the window
+EtCO2_mean,signal,Mean of end-tidal CO2 (mmHg) over the window
+EtCO2_min,signal,Minimum of end-tidal CO2 (mmHg) over the window
+EtCO2_slope,signal,Slope of end-tidal CO2 (mmHg) over the window
+EtCO2_trend,signal,Trend of end-tidal CO2 (mmHg) over the window
+HR_current,signal,Current value of heart rate (bpm) over the window
+HR_max,signal,Maximum of heart rate (bpm) over the window
+HR_mean,signal,Mean of heart rate (bpm) over the window
+HR_min,signal,Minimum of heart rate (bpm) over the window
+HR_slope,signal,Slope of heart rate (bpm) over the window
+HR_trend,signal,Trend of heart rate (bpm) over the window
+MAP_current,signal,Current value of mean arterial pressure (mmHg) over the window
+MAP_max,signal,Maximum of mean arterial pressure (mmHg) over the window
+MAP_mean,signal,Mean of mean arterial pressure (mmHg) over the window
+MAP_min,signal,Minimum of mean arterial pressure (mmHg) over the window
+MAP_slope,signal,Slope of mean arterial pressure (mmHg) over the window
+MAP_trend,signal,Trend of mean arterial pressure (mmHg) over the window
+SBP_current,signal,Current value of systolic blood pressure (mmHg) over the window
+SBP_max,signal,Maximum of systolic blood pressure (mmHg) over the window
+SBP_mean,signal,Mean of systolic blood pressure (mmHg) over the window
+SBP_min,signal,Minimum of systolic blood pressure (mmHg) over the window
+SBP_slope,signal,Slope of systolic blood pressure (mmHg) over the window
+SBP_trend,signal,Trend of systolic blood pressure (mmHg) over the window
+SpO2_current,signal,Current value of pulse oxygen saturation (%) over the window
+SpO2_max,signal,Maximum of pulse oxygen saturation (%) over the window
+SpO2_mean,signal,Mean of pulse oxygen saturation (%) over the window
+SpO2_min,signal,Minimum of pulse oxygen saturation (%) over the window
+SpO2_slope,signal,Slope of pulse oxygen saturation (%) over the window
+SpO2_trend,signal,Trend of pulse oxygen saturation (%) over the window
+actions_history_json,metadata,Nested JSON: history of clinician actions (20 min)
+bis_above_60_sec,metadata,Seconds BIS spent above 60 in the window
+bis_below_40_sec,metadata,Seconds BIS spent below 40 in the window
+bis_current,trend,Current BIS index
+bis_delta_abs,trend,Absolute change of BIS index
+bis_delta_pct,trend,Relative change (%) of BIS index
+bis_n_pts_short,trend,Number of samples in the short window of BIS index
+bis_slope_long,trend,Slope over the long window of BIS index
+bis_slope_short,trend,Slope over the short window of BIS index
+bis_trend,trend,Trend of BIS index
+bis_trend_code,trend,"Trend code (-1 down, 0 stable, +1 up) of BIS index"
+case_id,metadata,Case identifier (one patient surgery)
+case_id_fill,metadata,Case identifier used internally for signal filling
+causal_depth_json,metadata,Nested JSON: causal-depth analysis
+ce_propofol,metadata,Propofol effect-site concentration (ug/mL)
+ce_remi,metadata,Remifentanil effect-site concentration (ng/mL)
+cp_propofol,metadata,Propofol plasma concentration (ug/mL)
+cp_remi,metadata,Remifentanil plasma concentration (ng/mL)
+ct_propofol,metadata,Propofol ct concentration (ug/mL)
+decision_time_abs,metadata,Absolute decision time (seconds)
+depth_score,metadata,Depth of anesthesia composite score
+drug_concentrations_json,metadata,Nested JSON: drug concentration time series
+etco2_current,trend,Current EtCO2
+etco2_delta_abs,trend,Absolute change of EtCO2
+etco2_delta_pct,trend,Relative change (%) of EtCO2
+etco2_n_pts_short,trend,Number of samples in the short window of EtCO2
+etco2_slope_long,trend,Slope over the long window of EtCO2
+etco2_slope_short,trend,Slope over the short window of EtCO2
+etco2_trend,trend,Trend of EtCO2
+etco2_trend_code,trend,"Trend code (-1 down, 0 stable, +1 up) of EtCO2"
+events_json,metadata,Nested JSON: clinical events of the window
+exp_sevo,metadata,End-tidal sevoflurane concentration (%)
+history_summary,metadata,Text summary of the action history
+hr_current,trend,Current heart rate
+hr_delta_abs,trend,Absolute change of heart rate
+hr_delta_pct,trend,Relative change (%) of heart rate
+hr_n_pts_short,trend,Number of samples in the short window of heart rate
+hr_slope_long,trend,Slope over the long window of heart rate
+hr_slope_short,trend,Slope over the short window of heart rate
+hr_trend,trend,Trend of heart rate
+hr_trend_code,trend,"Trend code (-1 down, 0 stable, +1 up) of heart rate"
+lab_alb,lab,Preoperative lab value: albumin (g/dL)
+lab_alb_age,lab,Age of the preoperative albumin (g/dL) (seconds before case start)
+lab_alt,lab,Preoperative lab value: ALT (U/L)
+lab_alt_age,lab,Age of the preoperative ALT (U/L) (seconds before case start)
+lab_ammo,lab,Preoperative lab value: ammonia (umol/L)
+lab_ammo_age,lab,Age of the preoperative ammonia (umol/L) (seconds before case start)
+lab_aptt,lab,Preoperative lab value: aPTT (s)
+lab_aptt_age,lab,Age of the preoperative aPTT (s) (seconds before case start)
+lab_ast,lab,Preoperative lab value: AST (U/L)
+lab_ast_age,lab,Age of the preoperative AST (U/L) (seconds before case start)
+lab_be,lab,Preoperative lab value: base excess (mEq/L)
+lab_be_age,lab,Age of the preoperative base excess (mEq/L) (seconds before case start)
+lab_bun,lab,Preoperative lab value: BUN (mg/dL)
+lab_bun_age,lab,Age of the preoperative BUN (mg/dL) (seconds before case start)
+lab_ccr,lab,Preoperative lab value: creatinine clearance (mL/min)
+lab_ccr_age,lab,Age of the preoperative creatinine clearance (mL/min) (seconds before case start)
+lab_cl,lab,Preoperative lab value: chloride (mEq/L)
+lab_cl_age,lab,Age of the preoperative chloride (mEq/L) (seconds before case start)
+lab_cr,lab,Preoperative lab value: creatinine (mg/dL)
+lab_cr_age,lab,Age of the preoperative creatinine (mg/dL) (seconds before case start)
+lab_crp,lab,Preoperative lab value: C-reactive protein (mg/dL)
+lab_crp_age,lab,Age of the preoperative C-reactive protein (mg/dL) (seconds before case start)
+lab_esr,lab,Preoperative lab value: ESR (mm/h)
+lab_esr_age,lab,Age of the preoperative ESR (mm/h) (seconds before case start)
+lab_fib,lab,Preoperative lab value: fibrinogen (mg/dL)
+lab_fib_age,lab,Age of the preoperative fibrinogen (mg/dL) (seconds before case start)
+lab_gfr,lab,Preoperative lab value: GFR (mL/min/1.73m2)
+lab_gfr_age,lab,Age of the preoperative GFR (mL/min/1.73m2) (seconds before case start)
+lab_gluc,lab,Preoperative lab value: glucose (mg/dL)
+lab_gluc_age,lab,Age of the preoperative glucose (mg/dL) (seconds before case start)
+lab_hb,lab,Preoperative lab value: hemoglobin (g/dL)
+lab_hb_age,lab,Age of the preoperative hemoglobin (g/dL) (seconds before case start)
+lab_hco3,lab,Preoperative lab value: bicarbonate (mEq/L)
+lab_hco3_age,lab,Age of the preoperative bicarbonate (mEq/L) (seconds before case start)
+lab_hct,lab,Preoperative lab value: hematocrit (%)
+lab_hct_age,lab,Age of the preoperative hematocrit (%) (seconds before case start)
+lab_ica,lab,Preoperative lab value: ionized calcium (mmol/L)
+lab_ica_age,lab,Age of the preoperative ionized calcium (mmol/L) (seconds before case start)
+lab_k,lab,Preoperative lab value: potassium (mEq/L)
+lab_k_age,lab,Age of the preoperative potassium (mEq/L) (seconds before case start)
+lab_lac,lab,Preoperative lab value: lactate (mmol/L)
+lab_lac_age,lab,Age of the preoperative lactate (mmol/L) (seconds before case start)
+lab_na,lab,Preoperative lab value: sodium (mEq/L)
+lab_na_age,lab,Age of the preoperative sodium (mEq/L) (seconds before case start)
+lab_p,lab,Preoperative lab value: phosphorus (mg/dL)
+lab_p_age,lab,Age of the preoperative phosphorus (mg/dL) (seconds before case start)
+lab_pco2,lab,Preoperative lab value: PaCO2 (mmHg)
+lab_pco2_age,lab,Age of the preoperative PaCO2 (mmHg) (seconds before case start)
+lab_ph,lab,Preoperative lab value: arterial pH
+lab_ph_age,lab,Age of the preoperative arterial pH (seconds before case start)
+lab_plt,lab,Preoperative lab value: platelets (10^3/uL)
+lab_plt_age,lab,Age of the preoperative platelets (10^3/uL) (seconds before case start)
+lab_po2,lab,Preoperative lab value: PaO2 (mmHg)
+lab_po2_age,lab,Age of the preoperative PaO2 (mmHg) (seconds before case start)
+lab_pt_pct,lab,Preoperative lab value: PT (%)
+lab_pt_pct_age,lab,Age of the preoperative PT (%) (seconds before case start)
+lab_ptinr,lab,Preoperative lab value: INR
+lab_ptinr_age,lab,Age of the preoperative INR (seconds before case start)
+lab_ptsec,lab,Preoperative lab value: PT (s)
+lab_ptsec_age,lab,Age of the preoperative PT (s) (seconds before case start)
+lab_sao2,lab,Preoperative lab value: SaO2 (%)
+lab_sao2_age,lab,Age of the preoperative SaO2 (%) (seconds before case start)
+lab_tbil,lab,Preoperative lab value: total bilirubin (mg/dL)
+lab_tbil_age,lab,Age of the preoperative total bilirubin (mg/dL) (seconds before case start)
+lab_tprot,lab,Preoperative lab value: total protein (g/dL)
+lab_tprot_age,lab,Age of the preoperative total protein (g/dL) (seconds before case start)
+lab_wbc,lab,Preoperative lab value: white blood cells (10^3/uL)
+lab_wbc_age,lab,Age of the preoperative white blood cells (10^3/uL) (seconds before case start)
+mac,metadata,Minimum alveolar concentration (MAC) value
+map_below_55_sec,metadata,Seconds MAP spent below 55 mmHg in the window
+map_below_65_sec,metadata,Seconds MAP spent below 65 mmHg in the window
+map_current,trend,Current mean arterial pressure
+map_delta_abs,trend,Absolute change of mean arterial pressure
+map_delta_pct,trend,Relative change (%) of mean arterial pressure
+map_n_pts_short,trend,Number of samples in the short window of mean arterial pressure
+map_slope_long,trend,Slope over the long window of mean arterial pressure
+map_slope_short,trend,Slope over the short window of mean arterial pressure
+map_trend,trend,Trend of mean arterial pressure
+map_trend_code,trend,"Trend code (-1 down, 0 stable, +1 up) of mean arterial pressure"
+monitoring_type,metadata,Hemodynamic monitoring method (ART/NIBP/NONE)
+n_actions_hist,metadata,Number of actions in the history window
+n_drug_points,metadata,Number of drug concentration points
+n_drug_signals,metadata,Number of drug signals with data
+n_events,metadata,Number of clinical events in the window
+n_stale_9999,metadata,Number of signals with sentinel staleness 9999
+n_vitals_points_x,metadata,Number of vital points (coverage variant x)
+n_vitals_points_y,metadata,Number of vital points (coverage variant y)
+n_vitals_signals,metadata,Number of vital signals with data
+pkpd_residuals_json,metadata,Nested JSON: PK/PD model residuals
+propofol_ce_current,trend,Current propofol effect-site concentration
+propofol_ce_delta_abs,trend,Absolute change of propofol effect-site concentration
+propofol_ce_delta_pct,trend,Relative change (%) of propofol effect-site concentration
+propofol_ce_n_pts_short,trend,Number of samples in the short window of propofol effect-site concentration
+propofol_ce_slope_long,trend,Slope over the long window of propofol effect-site concentration
+propofol_ce_slope_short,trend,Slope over the short window of propofol effect-site concentration
+propofol_ce_trend,trend,Trend of propofol effect-site concentration
+propofol_ce_trend_code,trend,"Trend code (-1 down, 0 stable, +1 up) of propofol effect-site concentration"
+pt_adm,patient,Hospital admission offset from case start (seconds)
+pt_age,patient,Patient age (years)
+pt_airway,patient,Airway management device
+pt_aline1,patient,Arterial line presence/site
+pt_ane_type,patient,Type of anesthesia (General/Spinal/Regional)
+pt_aneend,patient,Anesthesia end offset from case start (seconds)
+pt_anestart,patient,Anesthesia start offset from case start (seconds)
+pt_approach,patient,Surgical approach (Open/Laparoscopic/Robotic)
+pt_asa,patient,ASA physical status classification (1-6)
+pt_bmi,patient,Body mass index (kg/m^2)
+pt_caseend,patient,"Case end timestamp (seconds, VitalDB internal)"
+pt_caseid,patient,VitalDB case identifier (direct identifier)
+pt_casestart,patient,"Case start timestamp (seconds, VitalDB internal)"
+pt_cline1,patient,Central venous line presence/site
+pt_cormack,patient,Cormack-Lehane laryngoscopic grade
+pt_death_inhosp,patient,In-hospital death flag (0/1)
+pt_department,patient,Surgical department
+pt_dis,patient,Hospital discharge offset from case start (seconds)
+pt_dltubesize,patient,Double-lumen tube size (mm)
+pt_dx,patient,Preoperative diagnosis
+pt_emop,patient,"Emergency operation flag (0=elective, 1=emergency)"
+pt_height,patient,Patient height (cm)
+pt_icu_days,patient,ICU length of stay (days)
+pt_intraop_ca,patient,Intraoperative calcium total dose
+pt_intraop_colloid,patient,Intraoperative colloid (mL)
+pt_intraop_crystalloid,patient,Intraoperative crystalloid (mL)
+pt_intraop_ebl,patient,Estimated intraoperative blood loss (mL)
+pt_intraop_eph,patient,Intraoperative ephedrine total dose
+pt_intraop_epi,patient,Intraoperative epinephrine total dose
+pt_intraop_ffp,patient,Intraoperative fresh frozen plasma (units)
+pt_intraop_ftn,patient,Intraoperative fentanyl total dose
+pt_intraop_mdz,patient,Intraoperative midazolam total dose
+pt_intraop_phe,patient,Intraoperative phenylephrine total dose
+pt_intraop_ppf,patient,Intraoperative propofol total dose
+pt_intraop_rbc,patient,Intraoperative packed red blood cells (units)
+pt_intraop_rocu,patient,Intraoperative rocuronium total dose
+pt_intraop_uo,patient,Intraoperative urine output (mL)
+pt_intraop_vecu,patient,Intraoperative vecuronium total dose
+pt_iv1,patient,First IV access site
+pt_iv2,patient,Second IV access site
+pt_lmasize,patient,Laryngeal mask airway size
+pt_opend,patient,Operation end offset from case start (seconds)
+pt_opname,patient,Operation name
+pt_opstart,patient,Operation start offset from case start (seconds)
+pt_optype,patient,Operation category
+pt_position,patient,Patient position during surgery
+pt_preop_alb,patient,Preoperative albumin (g/dL)
+pt_preop_alt,patient,Preoperative ALT (U/L)
+pt_preop_aptt,patient,Preoperative aPTT (s)
+pt_preop_ast,patient,Preoperative AST (U/L)
+pt_preop_be,patient,Preoperative base excess (mEq/L)
+pt_preop_bun,patient,Preoperative BUN (mg/dL)
+pt_preop_cr,patient,Preoperative creatinine (mg/dL)
+pt_preop_dm,patient,Preoperative diabetes mellitus (0/1)
+pt_preop_ecg,patient,Preoperative ECG finding
+pt_preop_gluc,patient,Preoperative glucose (mg/dL)
+pt_preop_hb,patient,Preoperative hemoglobin (g/dL)
+pt_preop_hco3,patient,Preoperative bicarbonate (mEq/L)
+pt_preop_htn,patient,Preoperative hypertension (0/1)
+pt_preop_k,patient,Preoperative potassium (mEq/L)
+pt_preop_na,patient,Preoperative sodium (mEq/L)
+pt_preop_paco2,patient,Preoperative arterial PaCO2 (mmHg)
+pt_preop_pao2,patient,Preoperative arterial PaO2 (mmHg)
+pt_preop_pft,patient,Preoperative pulmonary function test
+pt_preop_ph,patient,Preoperative arterial pH
+pt_preop_plt,patient,Preoperative platelet count (10^3/uL)
+pt_preop_pt,patient,Preoperative prothrombin time (s)
+pt_preop_sao2,patient,Preoperative arterial SaO2 (%)
+pt_sex,patient,Patient sex (M/F)
+pt_subjectid,patient,VitalDB subject identifier (direct identifier)
+pt_tubesize,patient,Endotracheal tube size (mm)
+pt_weight,patient,Patient weight (kg)
+remi_causal_flag,metadata,Flag for remifentanil causal-effect estimation
+remi_ce_current,trend,Current remifentanil effect-site concentration
+remi_ce_delta_abs,trend,Absolute change of remifentanil effect-site concentration
+remi_ce_delta_pct,trend,Relative change (%) of remifentanil effect-site concentration
+remi_ce_n_pts_short,trend,Number of samples in the short window of remifentanil effect-site concentration
+remi_ce_slope_long,trend,Slope over the long window of remifentanil effect-site concentration
+remi_ce_slope_short,trend,Slope over the short window of remifentanil effect-site concentration
+remi_ce_trend,trend,Trend of remifentanil effect-site concentration
+remi_ce_trend_code,trend,"Trend code (-1 down, 0 stable, +1 up) of remifentanil effect-site concentration"
+schema_version,metadata,Dataset schema version
+set_fio2,metadata,Ventilator FiO2 setting (%)
+set_peep,metadata,Ventilator PEEP setting (cmH2O)
+set_rr,metadata,Ventilator respiratory rate setting (breaths/min)
+set_tv,metadata,Ventilator tidal volume setting (mL)
+spo2_current,trend,Current SpO2
+spo2_delta_abs,trend,Absolute change of SpO2
+spo2_delta_pct,trend,Relative change (%) of SpO2
+spo2_n_pts_short,trend,Number of samples in the short window of SpO2
+spo2_slope_long,trend,Slope over the long window of SpO2
+spo2_slope_short,trend,Slope over the short window of SpO2
+spo2_trend,trend,Trend of SpO2
+spo2_trend_code,trend,"Trend code (-1 down, 0 stable, +1 up) of SpO2"
+staleness_json,metadata,Nested JSON: staleness (age) of each vital signal
+staleness_max,metadata,Maximum signal staleness (seconds)
+surgery_pct,metadata,Percentage of surgery completed at decision time
+time_since_induction_sec,metadata,Seconds since anesthesia induction at decision time
+vitals_json,metadata,"Nested JSON: vital-sign time series of the window (MAP, HR, BIS, SBP, DBP, SpO2, EtCO2)"
+window_id,metadata,Unique window identifier (case<id>_w<time>)
+vitals_json.MAP,vital,mean arterial pressure (mmHg): time series of values with offset from decision time
+vitals_json.HR,vital,heart rate (bpm): time series of values with offset from decision time
+vitals_json.BIS,vital,bispectral index (0-100): time series of values with offset from decision time
+vitals_json.SBP,vital,systolic blood pressure (mmHg): time series of values with offset from decision time
+vitals_json.DBP,vital,diastolic blood pressure (mmHg): time series of values with offset from decision time
+vitals_json.SpO2,vital,pulse oxygen saturation (%): time series of values with offset from decision time
+vitals_json.EtCO2,vital,end-tidal CO2 (mmHg): time series of values with offset from decision time
+result_1.action,output,Primary recommended action (top-1)
+result_1.ratio,output,Confidence ratio of the primary action (model probability)
+result_aux.action,output,Alternative recommended action (top-2)
+result_aux.ratio,output,Confidence ratio of the alternative action
+result_real,output,Action actually taken by the clinician (ground truth)

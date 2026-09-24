@@ -1,0 +1,14 @@
+model,anesbench_en_total_acc,anesbench_en_system2_acc,medqa_acc_pct,medxpertqa_text_acc_pct,medxpertqa_mm_acc_pct,healthbench_score,healthbench_professional_score,hearts_lightening_overall,hearts_vitaldb_hypotension_mbp_acc,realicu_gold_patient_status_acc,realicu_gold_action_hit5,realicu_gold_harmful_rate_hrr5,notes
+deepseek-v4.1-flash,,,,,,,,,,,,,Released 2026-09-10; no published medical benchmark results found
+gpt-6-sol,,,,,,,,,,,,,Released 2026-09-22; no published medical benchmark results found
+gpt-5.4,,,,,77.2,,48.1,0.671,,0.31,0.68,0.47,MedXpertQA MM self-reported (aggregators list 77.1-77.3); HealthBench Professional length-adjusted (OpenAI paper); RealICU with ICU-Evo agent
+deepseek-v4-pro,,,,,,,,,,,,,No published medical benchmark results found
+gemini-3.1-pro-preview,,,96.4,,81.0,,~45,0.683,0.43,0.46,0.68,0.30,"MedQA from Vals AI (2,000 Qs, archived); MedXpertQA MM self-reported (aggregators list 80.7-81.3); HealthBench Professional read from figure in OpenAI paper; HeaRTS VitalDB per-task values look imputed (0.43 below chance) - verify before citing; RealICU with ICU-Evo agent"
+gpt-5.4-mini,,,,,,,,,,,,,No published medical benchmark results found
+claude-opus-4-8,,,,,,,55.8,,,,,,HealthBench Professional from Anthropic system card (via DataCamp); scoring may differ from OpenAI's length-adjusted protocol
+claude-haiku-4-5-20251001,,,,,,,,0.629,0.73,,,,
+gpt-4o,0.77,0.59,86.5,30.4,42.8,0.32,,,,,,,MedQA from MedGemma technical report; MedXpertQA from official leaderboard; HealthBench from OpenAI paper (0-1 scale)
+gemini-3.1-flash-lite,,,,,,,,,,,,,No published medical benchmark results found
+medgemma:27b,,,87.7,25.7,,,,,,,,,Text variant; from MedGemma technical report. Base model Gemma-3-27B scores 0.58 on AnesBench
+REFERENCE: qwen3-235b-a22b,0.74,0.57,,,,,,0.627,,0.25,0.53,0.12,"Only model present in AnesBench, HeaRTS and RealICU; RealICU with ICU-Evo agent"
+REFERENCE: physicians,,,,,,,43.7,,,,,,HealthBench Professional physician baseline

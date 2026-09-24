@@ -1,0 +1,8 @@
+scope,group,n_cases,n_windows,mean_null_score,median_null_score,min_null_score,max_null_score
+split,overall,,84813,0.1161,0.0849,0.014,0.3811
+split,dev,25,423,0.2883,0.2866,0.2412,0.3757
+split,train,2994,80933,0.1145,0.0833,0.014,0.3811
+split,test,149,3457,0.1325,0.1386,0.0203,0.3357
+difficulty,easy,792,17359,0.123,0.0909,0.014,0.375
+difficulty,medium,1584,44852,0.1139,0.0815,0.0194,0.3811
+difficulty,hard,792,22602,0.115,0.0837,0.0203,0.3757

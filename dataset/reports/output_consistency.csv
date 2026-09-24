@@ -1,0 +1,8 @@
+scope,group,n_windows,top1_accuracy,top2_recall,result1_equals_aux,ratio_out_of_range,ratio_sum_gt_1,invalid_real_vocab,invalid_result1_vocab,invalid_aux_vocab
+split,overall,84813,0.558,0.8043,0.0,0,0,0,0,0
+split,dev,423,0.4941,0.7376,0.0,0,0,0,0,0
+split,train,80933,0.5578,0.8043,0.0,0,0,0,0,0
+split,test,3457,0.5684,0.8131,0.0,0,0,0,0,0
+difficulty,easy,17359,0.615,0.8659,0.0,0,0,0,0,0
+difficulty,medium,44852,0.5646,0.8094,0.0,0,0,0,0,0
+difficulty,hard,22602,0.501,0.7469,0.0,0,0,0,0,0

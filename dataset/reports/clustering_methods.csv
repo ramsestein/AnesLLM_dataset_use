@@ -1,0 +1,8 @@
+strategy,method
+knn,kNN Euclidean K=50 (baseline)
+random_forest,"Random Forest, probability out-of-fold (3 folds)"
+lightgbm,"LightGBM, probabilities out-of-fold (3 folds)"
+logistic,"Softmax logistic regression, out-of-fold (3 folds)"
+centroid,affinity = softmax(distance to class centroid)
+dwknn,kNN weighted by 1/distance
+umap_knn,UMAP (10 dims) + kNN K=50

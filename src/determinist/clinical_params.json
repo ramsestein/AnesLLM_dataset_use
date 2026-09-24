@@ -1,0 +1,165 @@
+{
+  "_comment": "Validity limits and system parameters for AnesLLM bench. Edit freely — config.py loads these at import time.",
+  "_units": {
+    "propofol_rate": "mg/s",
+    "remi_rate": "µg/s",
+    "nore_rate": "µg/s",
+    "BIS": "dimensionless (0–100)",
+    "MAP": "mmHg",
+    "HR": "bpm",
+    "time": "seconds",
+    "ORA": "unit·min (off-road area)",
+    "CORS": "dimensionless (0–∞, lower = better)"
+  },
+
+  "simulation": {
+    "pas_ts_sec":                 5,
+    "induction_duration_sec":   600,
+    "decision_interval_sec":    300,
+    "sim_duration_sec":        3600,
+    "window_history_sec":       600
+  },
+
+  "induction_rates": {
+    "propofol_mg_s":  0.15,
+    "remi_ug_s":      0.30
+  },
+
+  "maintenance_rates": {
+    "propofol_mg_s":  0.12,
+    "remi_ug_s":      0.18
+  },
+
+  "dose_limits": {
+    "propofol_min_mg_s":  0.0,
+    "propofol_max_mg_s":  0.28,
+    "remi_min_ug_s":      0.0,
+    "remi_max_ug_s":      0.58
+  },
+
+  "dose_steps": {
+    "_comment": "Three magnitudes (low/med/high) per drug. Apply +step for increase, −step for reduce.",
+    "propofol_low_mg_s":  0.008,
+    "propofol_med_mg_s":  0.021,
+    "propofol_high_mg_s": 0.042,
+    "remi_low_ug_s":      0.047,
+    "remi_med_ug_s":      0.125,
+    "remi_high_ug_s":     0.250
+  },
+
+  "vasopressor": {
+    "nore_bolus_rate_ug_s": 2.0,
+    "_comment": "Rate held for one full decision interval (~300 s) then reset to 0; mimics phenylephrine/ephedrine bolus."
+  },
+
+  "safety_lanes": {
+    "_comment": "Three-lane classification per variable. Lane 1=acceptable, Lane 2=marginal, Lane 3=off-road (contributes to CORS).",
+    "BIS": {
+      "acceptable_lo": 40,
+      "acceptable_hi": 60,
+      "marginal_lo":   35,
+      "marginal_hi":   62,
+      "offroad_lo":    35,
+      "offroad_hi":    65
+    },
+    "MAP": {
+      "acceptable_lo": 65,
+      "acceptable_hi": 100,
+      "marginal_lo":   60,
+      "marginal_hi":   110,
+      "offroad_lo":    60,
+      "offroad_hi":    110
+    },
+    "HR": {
+      "acceptable_lo": 50,
+      "acceptable_hi": 100,
+      "marginal_lo":   45,
+      "marginal_hi":   110,
+      "offroad_lo":    45,
+      "offroad_hi":    110
+    }
+  },
+
+  "harm_thresholds": {
+    "_comment": "Legacy legacy thresholds kept for backward compatibility with harm attribution.",
+    "map_hypotension_mmhg":    65,
+    "map_severe_mmhg":         55,
+    "bis_awareness_threshold": 60,
+    "bis_overdose_threshold":  40,
+    "bis_critical_threshold":  30,
+    "harm_min_duration_sec":   60
+  },
+
+  "adverse_events": {
+    "_comment": "Binary AE flags (§4.2 of study protocol). Stricter than off-road thresholds.",
+    "burst_suppression": {
+      "bis_max":        20,
+      "duration_sec":   60
+    },
+    "awareness_proxy": {
+      "bis_min":        70,
+      "duration_sec":  300
+    },
+    "deep_hypotension": {
+      "map_max_mmhg":   55,
+      "duration_sec":  120
+    },
+    "bradycardia": {
+      "hr_max_bpm":     40,
+      "duration_sec":   60
+    }
+  },
+
+  "cors": {
+    "_comment": "CORS = w_bis * ORA_BIS_norm + w_map * ORA_MAP_norm + w_hr * ORA_HR_norm. Weights sum to 1.",
+    "weight_bis": 0.40,
+    "weight_map": 0.40,
+    "weight_hr":  0.20,
+    "_norm_comment": "P95 denominators [unit·min] from VitalDB population reference. Calibrate after VitalDB analysis.",
+    "norm_bis_p95": 10.0,
+    "norm_map_p95": 15.0,
+    "norm_hr_p95":   8.0
+  },
+
+  "varvel_targets": {
+    "_comment": "Reference setpoints for computing Varvel performance errors (PE = (actual − target) / target × 100).",
+    "bis": 50.0,
+    "map": 82.5
+  },
+
+  "policies": {
+    "rule": {
+      "_comment": "All thresholds delegated to safety_lanes and harm_thresholds above; rule_policy has no extra parameters."
+    },
+    "pid": {
+      "bis_setpoint":        50.0,
+      "kp_mg_s_per_bis_pt":  0.001,
+      "ti_sec":            500.0,
+      "td_sec":             80.0,
+      "deriv_tau_sec":      50.0,
+      "anti_windup_limit":   0.10,
+      "disc_rel_thr":        0.10
+    },
+    "mpc": {
+      "bis_setpoint":        50.0,
+      "horizon_steps":          3,
+      "lambda_u":           1000.0,
+      "max_step_mg_s":       0.04,
+      "disc_rel_thr":        0.10,
+      "pkpd_gamma":           2.6,
+      "pkpd_e0":             97.4,
+      "pkpd_emax":           97.4,
+      "pkpd_ce50_init_ug_ml": 2.8,
+      "rls_forgetting":      0.98
+    },
+    "clads": {
+      "bis_setpoint":        50.0,
+      "dead_zone_bis_pts":    5.0,
+      "boost_thr_bis_pts":   15.0,
+      "max_same_actions":       3
+    },
+    "fuzzy": {
+      "bis_setpoint":        50.0
+    }
+  }
+}

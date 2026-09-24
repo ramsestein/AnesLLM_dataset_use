@@ -1,0 +1,10 @@
+
+===== FIX consistency claude-haiku-4-5-20251001 (claude) =====
+model=claude-haiku-4-5-20251001 backend=claude split=test windows=14
+
+accuracy: 0.2400 (100 windows) · invalid: 0 · errors: 0
+mean self-consistency: 0.9433
+accuracy by difficulty: {'hard': 0.24, 'easy': 0.15, 'medium': 0.273}
+accuracy by class: {'no_action': 0.406, 'increase_hypnotic': 0.2, 'reduce_opioid': 0.045, 'increase_opioid': 0.148, 'reduce_hypnotic': 0.357}
+results -> C:\Users\Ramsés\Desktop\Proyectos\dataset_anesllm\results\claude-haiku-4-5-20251001_repeats3\test.jsonl
+summary -> C:\Users\Ramsés\Desktop\Proyectos\dataset_anesllm\results\claude-haiku-4-5-20251001_repeats3\summary.json

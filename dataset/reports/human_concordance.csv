@@ -1,0 +1,8 @@
+strategy,total score,average per window,% of maximum
+random_forest,886.2,2.974,0.991
+lightgbm,884.4,2.968,0.989
+dwknn,868.2,2.913,0.971
+knn,867.6,2.911,0.970
+logistic,860.4,2.887,0.962
+umap_knn,832.2,2.793,0.931
+centroid,768.0,2.577,0.859

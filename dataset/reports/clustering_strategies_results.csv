@@ -1,0 +1,9 @@
+strategy,GT = top1 (agreement),GT in top2,GT weight,entropy,fragility
+lightgbm,0.558,0.804,0.436,1.57,0.564
+logistic,0.537,0.787,0.405,1.69,0.595
+random_forest,0.535,0.782,0.367,1.92,0.633
+dwknn,0.512,0.756,0.374,1.79,0.626
+knn,0.509,0.753,0.368,1.82,0.632
+umap_knn,0.464,0.712,0.349,1.81,0.651
+centroid,0.386,0.642,0.176,2.58,0.824
+    
