@@ -1,2 +1,2 @@
-﻿n_windows,human_consensus,human_plausible,class_distribution
-555,0.6793,0.9423,"{""reduce_hypnotic"": 131, ""no_action"": 357, ""increase_hypnotic"": 67}"
+﻿n_windows,human_consensus,human_plausible,human_safety,class_distribution
+555,0.6793,0.9423,0.9766,"{""reduce_hypnotic"": 131, ""no_action"": 357, ""increase_hypnotic"": 67}"

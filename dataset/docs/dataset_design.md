@@ -96,11 +96,10 @@ hospital** reviewed a subset of **298 windows**. Each reviewer independently jud
 policy action proposed on a window, whether that action was **appropriate** (`appropriate`,
 yes/no, blind to any algorithm). The `valid_actions` field of the review exports is the tool's internal reference answer (not a reviewer judgment) and is not used as an annotation. 
 
-## 6. Coherence analysis and strategy selection
+## 6. Strategy selection: agreement with the real action
 
-Each strategy was scored along two axes:
-
-1. **Internal coherence** — agreement with the real action (`result_real`):
+The strategy was selected on a single criterion: **agreement with the real action**
+(`result_real`).
 
 | strategy | top1 = real | real ∈ top2 |
 |---|---|---|
@@ -112,26 +111,25 @@ Each strategy was scored along two axes:
 | umap_knn | 46.4% | 71.2% |
 | centroid | 38.6% | 64.2% |
 
-2. **External coherence** — agreement with the three reviewers, measured with their actual
-   `appropriate` judgments (a strategy's `top1` scores when the reviewers approved it; see
-   `dataset/reports/human_concordance_redo.csv`):
+### External review (reported for transparency, not a selection criterion)
+
+Three external reviewers judged a subset of 298 windows with their actual `appropriate` judgments
+(`dataset/reports/human_concordance_redo.csv`). Under this metric `centroid` (50.9%) and
+`logistic` (45.2%) score **higher** than LightGBM (43.0%), so the review does **not** single out
+LightGBM as the best strategy:
 
 | strategy | redo % of max (`appropriate`) | top1 coverage | top1 approved (majority) |
 |---|---|---|---|
 | centroid | 50.9% | 75.5% | 43.1% |
 | logistic | 45.2% | 85.9% | 28.9% |
-| **lightgbm** | **43.0%** | **94.6%** | 26.6% |
+| lightgbm | 43.0% | 94.6% | 26.6% |
 | dwknn | 40.8% | 88.3% | 26.2% |
 | knn | 40.5% | 88.9% | 26.4% |
 | random_forest | 35.9% | 92.3% | 25.1% |
 | umap_knn | 33.9% | 78.9% | 27.7% |
 
-**LightGBM was selected** as the best trade-off between the two axes: it is **first** in internal
-coherence (top1 = real 55.8%, real ∈ top2 80.4%). The two best strategies in external coherence
-are `centroid` (50.9%) and `logistic` (45.2%), but they trail LightGBM internally (`centroid` is
-last at 38.6%, `logistic` second at 53.7%). LightGBM ranks third externally (43.0%) but with the
-**highest top1 coverage** (94.6%): the reviewers actually saw and judged its top1 in nearly every
-window, making its external score the most reliable. Its top-2 became `result_1` / `result_aux`.
+**LightGBM was selected**: it has the best agreement with the real action. Its top-2 became
+`result_1` / `result_aux`.
 
 > The original `human_concordance.csv` (~99%) was scored against `valid_actions` (the tool's
 > internal reference), not the reviewers' judgment; the table above is the corrected version

@@ -1,0 +1,12 @@
+You are an expert anesthesiologist in the middle of a real surgical case. Below is the current state of the patient, derived from continuous intraoperative monitoring.
+
+{case}
+
+Based ONLY on the information above, decide the single best next anesthetic adjustment. Choose exactly one of the following options:
+
+a) increase_hypnotic
+b) reduce_hypnotic
+c) no_action
+
+Respond with exactly one character: the letter of your choice (a, b or c).
+Output nothing else more.

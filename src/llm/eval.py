@@ -32,11 +32,31 @@ DATA = ROOT / "dataset" / "data"
 PROMPT_PATH = Path(__file__).resolve().parent / "prompt.txt"
 MANIFEST = ROOT / "dataset" / "reports" / "split_manifest.csv"
 
-# orden fijo de opciones (a-e). Debe coincidir con el prompt.
+# orden fijo de opciones (a-e). Debe coincidir con el prompt completo.
 ACTIONS = ["increase_hypnotic", "reduce_hypnotic", "increase_opioid",
            "reduce_opioid", "no_action"]
 LETTER_TO_ACTION = {chr(ord("a") + i): a for i, a in enumerate(ACTIONS)}
 ACTION_TO_LETTER = {a: ch for ch, a in LETTER_TO_ACTION.items()}
+
+# opciones del prompt no-opioide (a-c): solo hipnótico / no_action
+NO_OPIOID_ACTIONS = ["increase_hypnotic", "reduce_hypnotic", "no_action"]
+NO_OPIOID_LETTER_TO_ACTION = {chr(ord("a") + i): a
+                              for i, a in enumerate(NO_OPIOID_ACTIONS)}
+NO_OPIOID_ACTION_TO_LETTER = {a: ch for ch, a in NO_OPIOID_LETTER_TO_ACTION.items()}
+
+# subgrupo sin opioide ni vasopressor (mismo criterio que los deterministas)
+OPIOID = {"increase_opioid", "reduce_opioid"}
+VASO = {"vasopressor"}
+EXCLUDED_ACTIONS = OPIOID | VASO
+
+
+def is_no_opioid(rec):
+    """True si ninguna referencia (result_real/result_1/result_aux) es opioide ni vasopressor."""
+    out = rec.get("output", {})
+    r1 = (out.get("result_1") or {}).get("action")
+    raux = (out.get("result_aux") or {}).get("action")
+    rr = out.get("result_real")
+    return not (rr in EXCLUDED_ACTIONS or r1 in EXCLUDED_ACTIONS or raux in EXCLUDED_ACTIONS)
 
 KEY_LABS = ["hb", "hct", "plt", "wbc", "na", "k", "gluc", "cr", "lac", "ph", "hco3", "be"]
 
@@ -44,41 +64,45 @@ KEY_LABS = ["hb", "hct", "plt", "wbc", "na", "k", "gluc", "cr", "lac", "ph", "hc
 CAPS = (16, 64, 256, 1024)
 
 
-def parse_letter(text):
-    """Extrae la letra (a-e) de una respuesta, tolerando respuestas largas/de razonamiento."""
+def parse_letter(text, letters="abcde"):
+    """Extrae la letra de una respuesta, tolerando respuestas largas/de razonamiento.
+
+    ``letters`` es el conjunto de letras válidas del prompt ("abc" para el prompt
+    no-opioide de 3 opciones, "abcde" para el completo).
+    """
     if not text:
         return None
     t = text.strip()
-    if len(t) == 1 and t.lower() in LETTER_TO_ACTION:
+    if len(t) == 1 and t.lower() in letters:
         return t.lower()
     # letra al inicio: "c", "c)", "c -", "c."
-    m = re.match(r"^\s*\(?([a-e])\)?\s*(?:[-.:\u2013\u2014]|$)", t, re.IGNORECASE)
+    m = re.match(rf"^\s*\(?([{letters}])\)?\s*(?:[-.:\u2013\u2014]|$)", t, re.IGNORECASE)
     if m:
         return m.group(1).lower()
     # patrones explícitos: "answer: c", "option c", "choose c", ...
-    m = (re.search(r"\banswer\b[^a-e]{0,20}\b([a-e])\b", t, re.IGNORECASE)
-         or re.search(r"\boption\b[^a-e]{0,20}\b([a-e])\b", t, re.IGNORECASE)
-         or re.search(r"\b(?:choose|select|choice|letter)\b[^a-e]{0,20}\b([a-e])\b",
+    m = (re.search(rf"\banswer\b[^{letters}]{{0,20}}\b([{letters}])\b", t, re.IGNORECASE)
+         or re.search(rf"\boption\b[^{letters}]{{0,20}}\b([{letters}])\b", t, re.IGNORECASE)
+         or re.search(rf"\b(?:choose|select|choice|letter)\b[^{letters}]{{0,20}}\b([{letters}])\b",
                       t, re.IGNORECASE))
     if m:
         return m.group(1).lower()
     # decisión en negrita al final: "**a**"
-    m = re.search(r"\*\*\s*([a-e])\s*\*\*\s*$", t, re.IGNORECASE)
+    m = re.search(rf"\*\*\s*([{letters}])\s*\*\*\s*$", t, re.IGNORECASE)
     if m:
         return m.group(1).lower()
     # última letra suelta: los modelos que razonan ponen la respuesta al final
-    letters = re.findall(r"\b([a-e])\b", t, re.IGNORECASE)
-    if letters:
-        return letters[-1].lower()
+    found = re.findall(rf"\b([{letters}])\b", t, re.IGNORECASE)
+    if found:
+        return found[-1].lower()
     return None
 
 
-def is_clean_letter(text):
+def is_clean_letter(text, letters="abcde"):
     """True si la respuesta es una letra limpia (no razonamiento truncado)."""
     if not text:
         return False
     t = text.strip()
-    return bool(re.match(r"^\(?[a-eA-E]\)?(?:\s*[-.:\u2013\u2014]|\s|$)", t))
+    return bool(re.match(rf"^\(?[{letters}]\)?(?:\s*[-.:\u2013\u2014]|\s|$)", t, re.IGNORECASE))
 
 
 # ---------------------------------------------------------------- env & HTTP
@@ -447,6 +471,10 @@ def main():
                     help="seed for selecting the --limit subset (reproducible)")
     ap.add_argument("--resume", action="store_true",
                     help="skip windows already in the output file")
+    ap.add_argument("--prompt", default="",
+                    help="archivo de prompt en src/llm/ (default: prompt.txt)")
+    ap.add_argument("--no-opioid", action="store_true",
+                    help="subgrupo sin opioide/vasopressor + prompt de 3 opciones (a-c)")
     args = ap.parse_args()
 
     load_env()
@@ -454,12 +482,23 @@ def main():
         sys.exit(f"unknown backend: {args.backend}")
     fn = BACKENDS[args.backend]
 
-    prompt_tpl = PROMPT_PATH.read_text(encoding="utf-8")
+    if args.no_opioid:
+        letter_to_action = NO_OPIOID_LETTER_TO_ACTION
+        valid_letters = "abc"
+    else:
+        letter_to_action = LETTER_TO_ACTION
+        valid_letters = "abcde"
+
+    prompt_name = args.prompt or ("prompt_no_opioid.txt" if args.no_opioid else "prompt.txt")
+    prompt_tpl = (Path(__file__).resolve().parent / prompt_name).read_text(encoding="utf-8")
+
     data_dir = Path(args.data_dir) / args.split
     if args.output:
         out_dir = Path(args.output)
     else:
         name = sanitize(args.model)
+        if args.no_opioid:
+            name += "_noopioid"
         if args.repeats > 1:
             name += f"_repeats{args.repeats}"
         out_dir = ROOT / "results" / "data_results" / name
@@ -485,6 +524,10 @@ def main():
     for f in sorted(data_dir.glob("case*.jsonl")):
         for line in open(f, encoding="utf-8"):
             all_windows.append(json.loads(line))
+
+    # subgrupo sin opioide ni vasopressor (antes de la selección por seed)
+    if args.no_opioid:
+        all_windows = [w for w in all_windows if is_no_opioid(w)]
 
     # subconjunto reproducible (seed) sobre TODAS las ventanas
     if args.limit and args.limit < len(all_windows):
@@ -514,7 +557,7 @@ def main():
             try:
                 raw = fn(args.model, prompt)
                 if raw and raw.strip():
-                    letter = parse_letter(raw)
+                    letter = parse_letter(raw, valid_letters)
                     return {"letter": letter, "raw": raw,
                             "explanation": strip_letter(raw, letter) if letter else raw,
                             "error": False}
@@ -546,7 +589,7 @@ def main():
             majority = letters[0] if letters else None
             consistency = None
 
-        predicted = LETTER_TO_ACTION.get(majority)
+        predicted = letter_to_action.get(majority)
         ok = 1 if predicted == result_real else 0
 
         rec_out = {

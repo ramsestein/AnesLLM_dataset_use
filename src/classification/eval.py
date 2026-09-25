@@ -29,8 +29,9 @@ from pathlib import Path
 
 SRC = Path(__file__).resolve().parent.parent  # src/
 sys.path.insert(0, str(SRC))
-from llm.eval import (render_case, sanitize, LETTER_TO_ACTION,
-                      ACTION_TO_LETTER, compute_summary, print_summary)
+from llm.eval import (render_case, sanitize, LETTER_TO_ACTION, ACTION_TO_LETTER,
+                      NO_OPIOID_ACTIONS, NO_OPIOID_LETTER_TO_ACTION,
+                      NO_OPIOID_ACTION_TO_LETTER, compute_summary, print_summary)
 
 ROOT = SRC.parent
 DATA = ROOT / "dataset" / "data"
@@ -64,7 +65,9 @@ ACTION_DESC = {
 }
 
 
-def build_questions():
+def build_questions(no_opioid=False):
+    actions = NO_OPIOID_ACTIONS if no_opioid else ACTIONS
+    criteria = {a: ACTION_DESC[a] for a in actions}
     return {
         "decision": {
             "type": "choice",
@@ -73,7 +76,7 @@ def build_questions():
                 "Based ONLY on the patient state below, choose the single best next "
                 "anesthetic adjustment."
             ),
-            "criteria": dict(ACTION_DESC),
+            "criteria": criteria,
         }
     }
 
@@ -107,7 +110,7 @@ def _pack(answer):
 
 def _laya_eval(states, args):
     agent = _get_laya_agent(args.max_len)
-    q = build_questions()
+    q = build_questions(args.no_opioid)
     out = []
     bs = max(1, args.batch_size)
     for start in range(0, len(states), bs):
@@ -141,14 +144,15 @@ def _http_post_json(url, headers, payload, timeout=180):
         return json.loads(r.read().decode("utf-8"))
 
 
-def _call_jev(state):
+def _call_jev(state, no_opioid=False):
     key = os.environ.get("JEV_API_KEY")
     if not key:
         raise RuntimeError("missing JEV_API_KEY")
     headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json",
                "User-Agent": "AnesLLM-benchmark/1.0",
                "Accept": "application/json"}
-    payload = {"model": "jev-latest", "state": state, "questions": build_questions()}
+    payload = {"model": "jev-latest", "state": state,
+               "questions": build_questions(no_opioid)}
     r = _http_post_json(JEV_URL, headers, payload)
     # la API envuelve la respuesta en data.result; la doc muestra answers arriba
     if "answers" in r:
@@ -167,7 +171,7 @@ def _jev_eval(states, args):
         last = "empty response"
         for _ in range(3):
             try:
-                ans = _call_jev(state)
+                ans = _call_jev(state, args.no_opioid)
                 p = _pack(ans)
                 if p["choice"]:
                     return p
@@ -229,11 +233,20 @@ def main():
 
     load_env()
 
+    if args.no_opioid:
+        action_to_letter = NO_OPIOID_ACTION_TO_LETTER
+        letter_to_action = NO_OPIOID_LETTER_TO_ACTION
+    else:
+        action_to_letter = ACTION_TO_LETTER
+        letter_to_action = LETTER_TO_ACTION
+
     data_dir = Path(args.data_dir) / args.split
     if args.output:
         out_dir = Path(args.output)
     else:
         name = sanitize(args.model)
+        if args.no_opioid:
+            name += "_noopioid"
         if args.repeats > 1:
             name += f"_repeats{args.repeats}"
         out_dir = ROOT / "results" / "data_results" / name
@@ -290,8 +303,8 @@ def main():
         d = difficulty.get(str(case_id), "unknown")
         resps = window_res[i]
 
-        letters = [ACTION_TO_LETTER[r["choice"]] for r in resps
-                   if not r.get("error") and r.get("choice") in ACTION_TO_LETTER]
+        letters = [action_to_letter[r["choice"]] for r in resps
+                   if not r.get("error") and r.get("choice") in action_to_letter]
         errs = sum(1 for r in resps if r.get("error"))
 
         if args.repeats > 1 and letters:
@@ -305,7 +318,7 @@ def main():
             majority = letters[0] if letters else None
             consistency = None
 
-        predicted = LETTER_TO_ACTION.get(majority)
+        predicted = letter_to_action.get(majority)
         ok = 1 if predicted == result_real else 0
 
         rec_out = {
