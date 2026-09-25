@@ -39,11 +39,32 @@ DIRECTION = {
 def sanitize(name):
     return re.sub(r'[<>:"/\\|?*]', "_", name)
 
-# temperatura usada por modelo (0 salvo los que la rechazan; deterministas N/A)
+# temperatura / razonamiento usado por modelo (0 = sin razonamiento; default = razona)
 TEMPERATURE = {
-    "gpt-6-sol": "default (no 0)", "claude-opus-4-8": "default (no 0)",
-    "rules": "N/A (determinista)", "pid": "N/A (determinista)",
-    "clads": "N/A (determinista)", "fuzzy": "N/A (determinista)",
+    "deepseek-flash": "0 (no reasoning)",
+    "deepseek-v4-pro": "0 (no reasoning)",
+    "gemini-3.1-flash-lite": "0 (no reasoning)",
+    "gemini-3.1-pro-preview": "0 (no reasoning)",
+    "gpt-4o": "0 (no reasoning)",
+    "gpt-5.4-mini": "0 (no reasoning)",
+    "gpt-5.4": "0 (no reasoning)",
+    "gpt-6-sol": "default (reasoning)",
+    "claude-haiku-4-5-20251001": "0 (no reasoning)",
+    "claude-opus-4-8": "default (thinking off)",
+    "medgemma:27b": "0 (no reasoning)",
+    "laya": "N/A (classifier)",
+    "jev": "N/A (classifier)",
+    "rules": "N/A (deterministic)",
+    "pid": "N/A (deterministic)",
+    "clads": "N/A (deterministic)",
+    "fuzzy": "N/A (deterministic)",
+}
+
+# nombres legibles de los baselines triviales (filas del CSV del subgrupo)
+FLOOR_NAMES = {
+    "floor_always_no_action": "always no_action (floor)",
+    "floor_previous_action": "previous action (floor)",
+    "floor_random_expected": "random expected (floor)",
 }
 
 
@@ -61,6 +82,21 @@ def load_dataset():
 def load_csv(path):
     with open(path, encoding="utf-8-sig") as fh:
         return list(csv.DictReader(fh))
+
+
+def load_reviewers():
+    """Lee los artefactos de revisión humana (acuerdo y apropiación).
+
+    Devuelve dict con listas de dicts, o dicts vacíos si los archivos no existen.
+    """
+    out = {"agreement": [], "appropriateness": []}
+    ag = OUT / "reviewers_agreement.csv"
+    if ag.exists():
+        out["agreement"] = load_csv(ag)
+    ap = OUT / "reviewers_appropriateness.csv"
+    if ap.exists():
+        out["appropriateness"] = load_csv(ap)
+    return out
 
 
 def fnum(v):
@@ -754,18 +790,9 @@ def main():
               ["fleiss_kappa_models", "ensemble_majority_accuracy",
                "windows_all_fail", "n_windows"])
 
-    # --- sección 8: subgrupo sin opioide ni vasopressor
-    nop = no_opioid_subgroup(models, pred, gt)
-    write_csv(OUT / "no_opioid_subgroup.csv",
-              [{"model": m, **nop["models"][m]} for m in models],
-              ["model", "strict", "consensus", "plausibility"])
-    write_csv(OUT / "no_opioid_subgroup_meta.csv",
-              [{"n_windows": nop["n"],
-                "human_consensus": round(nop["human_consensus"], 4),
-                "human_plausible": round(nop["human_plausible"], 4),
-                "class_distribution": json.dumps(nop["class_distribution"])}],
-              ["n_windows", "human_consensus", "human_plausible",
-               "class_distribution"])
+    # --- sección 8: subgrupo sin opioide ni vasopressor (5 opciones, obsoleto)
+    # La versión dedicada de 3 opciones se genera con src/analyze_noopioid.py y
+    # se lee en la sección 9 del reporte desde no_opioid_subgroup.csv.
 
     # --- sección 9: red flags de las decisiones humanas
     hrf = human_red_flags(gt, ds)
@@ -776,38 +803,47 @@ def main():
               ["reference", "n", "any"] + list(RED_FLAGS.keys()))
     human_safety = 1 - hrf["result_real"]["any"]
 
-    # --- gráficas del subgrupo no-opioide
-    nop_wids = nop["wids"]
-    nop_hflag = subgroup_red_flag_rate(models, pred, gt, ds, nop_wids)
-    nop_human_safety = subgroup_human_safety(gt, ds, nop_wids)
-    make_subgroup_plots(nop, nop_hflag, nop_human_safety, models)
+    # --- red flags globales por modelo (harmful action rate)
+    hflag = harmful_action_rate(full_models, pred, gt, ds)
+
+    # --- sección revisores (artefactos de revisión humana)
+    reviewers = load_reviewers()
 
     # --- reporte Markdown
-    write_report(acc, cf, clf, tax, rf, diff, boot, cons, agree, nop, full_models, models)
-    hflag = harmful_action_rate(full_models, pred, gt, ds)
+    write_report(acc, cf, clf, tax, rf, diff, boot, cons, agree,
+                 full_models, models, hflag, reviewers)
     make_plots(acc, cf, hflag, human_safety, full_models)
     print("análisis completo en", OUT)
 
 
-def write_report(acc, cf, clf, tax, rf, diff, boot, cons, agree, nop, full_models, all_models):
+def write_report(acc, cf, clf, tax, rf, diff, boot, cons, agree,
+                 full_models, all_models, hflag, reviewers):
     lines = []
     lines.append(f"# AnesLLM Benchmark Analysis ({len(full_models)} models)")
     lines.append("")
     lines.append(f"- Windows (test, vasopressor excluded): **{cf['n_windows']}**")
-    lines.append(f"- **Human ceiling** (consensus vs result_1): {cf['human_consensus']:.3f} · "
-                 f"(plausible {{result_1, result_aux}}): {cf['human_plausible']:.3f}")
-    lines.append(f"- Floors: always no_action {cf['floor_always_no_action']:.3f} · "
-                 f"previous action {cf['floor_previous_action']:.3f} · "
-                 f"random {cf['floor_random_expected']:.3f}")
     lines.append("")
+
     lines.append("## 1. Accuracy against each reference")
     lines.append("")
     lines.append("| model | strict (result_real) | consensus (result_1) | plausible {1,aux} | weighted |")
     lines.append("|---|--|--|--|--|")
     for m in sorted(full_models, key=lambda m: -acc[m]["consensus"]):
-        lines.append(f"| {m} | {acc[m]['strict']:.3f} | {acc[m]['consensus']:.3f} | "
+        lines.append(f"| {disp(m)} | {acc[m]['strict']:.3f} | {acc[m]['consensus']:.3f} | "
                      f"{acc[m]['plausibility']:.3f} | {acc[m]['weighted']:.3f} |")
     lines.append("")
+
+    lines.append("## 2. Ceiling and floors")
+    lines.append("")
+    lines.append("| reference | strict accuracy |")
+    lines.append("|---|---|")
+    lines.append(f"| human ceiling (consensus vs result_1) | {cf['human_consensus']:.3f} |")
+    lines.append(f"| human ceiling (plausible {{result_1, result_aux}}) | {cf['human_plausible']:.3f} |")
+    lines.append(f"| floor: always no_action | {cf['floor_always_no_action']:.3f} |")
+    lines.append(f"| floor: previous action | {cf['floor_previous_action']:.3f} |")
+    lines.append(f"| floor: random expected | {cf['floor_random_expected']:.3f} |")
+    lines.append("")
+
     lines.append("## 3. Classification quality")
     lines.append("")
     lines.append("| model | balanced acc | macro-F1 | Cohen κ | intervention index |")
@@ -815,9 +851,10 @@ def write_report(acc, cf, clf, tax, rf, diff, boot, cons, agree, nop, full_model
     for m in sorted(full_models, key=lambda m: -clf[m]["macro_f1"]):
         v = clf[m]
         ii = f"{v['intervention_index']:.2f}" if v["intervention_index"] is not None else "—"
-        lines.append(f"| {m} | {v['balanced_accuracy']:.3f} | {v['macro_f1']:.3f} | "
+        lines.append(f"| {disp(m)} | {v['balanced_accuracy']:.3f} | {v['macro_f1']:.3f} | "
                      f"{v['cohen_kappa']:.3f} | {ii} |")
     lines.append("")
+
     lines.append("## 4. Error taxonomy (proportion of windows)")
     lines.append("")
     lines.append("| model | opposite direction | wrong drug | over-intervention | under-treatment | other |")
@@ -825,21 +862,31 @@ def write_report(acc, cf, clf, tax, rf, diff, boot, cons, agree, nop, full_model
     for m in sorted(full_models):
         t = tax[m]
         n = sum(t.values()) or 1
-        lines.append(f"| {m} | {t.get('opposite_direction',0)/n:.3f} | "
+        lines.append(f"| {disp(m)} | {t.get('opposite_direction',0)/n:.3f} | "
                      f"{t.get('wrong_drug',0)/n:.3f} | {t.get('over_intervention',0)/n:.3f} | "
                      f"{t.get('under_treatment',0)/n:.3f} | {t.get('other',0)/n:.3f} |")
     lines.append("")
-    lines.append("## 5. Reliability (case-clustered bootstrap, 95% CI)")
+
+    lines.append("## 5. Red flags (harmful action rate)")
+    lines.append("")
+    lines.append("| model | harmful action rate |")
+    lines.append("|---|---|")
+    for m in sorted(full_models, key=lambda m: hflag[m]):
+        lines.append(f"| {disp(m)} | {hflag[m]:.3f} |")
+    lines.append("")
+
+    lines.append("## 6. Reliability (case-clustered bootstrap, 95% CI)")
     lines.append("")
     lines.append("| model | consensus (CI) | plausible (CI) |")
     lines.append("|---|---|---|")
     for m in sorted(full_models, key=lambda m: -boot[m]["consensus"][0]):
         c = boot[m]["consensus"]
         p = boot[m]["plausibility"]
-        lines.append(f"| {m} | {c[0]:.3f} [{c[1]:.3f}, {c[2]:.3f}] | "
+        lines.append(f"| {disp(m)} | {c[0]:.3f} [{c[1]:.3f}, {c[2]:.3f}] | "
                      f"{p[0]:.3f} [{p[1]:.3f}, {p[2]:.3f}] |")
     lines.append("")
-    lines.append("## 6. Consistency (3 repeats)")
+
+    lines.append("## 7. Consistency (3 repeats)")
     lines.append("")
     lines.append("| model | Fleiss κ | error rate stable | error rate unstable |")
     lines.append("|---|---|---|---|")
@@ -847,27 +894,73 @@ def write_report(acc, cf, clf, tax, rf, diff, boot, cons, agree, nop, full_model
         v = cons[m]
         eu = f"{v['error_rate_unstable']:.3f}" if v["error_rate_unstable"] is not None else "—"
         es = f"{v['error_rate_stable']:.3f}" if v["error_rate_stable"] is not None else "—"
-        lines.append(f"| {m} | {v['fleiss_kappa']:.3f} | {es} | {eu} |")
+        lines.append(f"| {disp(m)} | {v['fleiss_kappa']:.3f} | {es} | {eu} |")
     lines.append("")
-    lines.append("## 7. Inter-model agreement")
+
+    lines.append("## 8. Inter-model agreement")
     lines.append("")
     lines.append(f"- Fleiss κ ({len(full_models)} models): **{agree['fleiss_kappa_models']:.3f}**")
     lines.append(f"- Majority-vote ensemble: **{agree['ensemble_majority_accuracy']:.3f}**")
     lines.append(f"- Windows where all models fail: **{agree['windows_all_fail']}**")
     lines.append("")
-    lines.append("## 8. No-opioid subgroup (no opioid/vasopressor in any reference)")
+
+    # 9. No-opioid subgroup: versión dedicada de 3 opciones
+    lines.append("## 9. No-opioid subgroup (3-option prompt)")
     lines.append("")
-    lines.append(f"- Windows: **{nop['n']}** · human consensus {nop['human_consensus']:.3f} · "
-                 f"plausible {nop['human_plausible']:.3f}")
-    lines.append(f"- Class distribution: {nop['class_distribution']}")
+    sub_csv = OUT / "no_opioid_subgroup.csv"
+    if sub_csv.exists():
+        lines.append("Dedicated 3-option evaluation (see `no_opioid_report.md`).")
+        lines.append("")
+        lines.append("| model | strict | consensus | plausible | harmful rate |")
+        lines.append("|---|---|---|---|---|")
+        for r in load_csv(sub_csv):
+            name = r["model"]
+            cons_v = r["consensus"] if r["consensus"] != "" else "\u2014"
+            plau_v = r["plausibility"] if r["plausibility"] != "" else "\u2014"
+            if name in FLOOR_NAMES:
+                name = f"*{FLOOR_NAMES[name]}*"
+            else:
+                name = disp(name)
+            lines.append(f"| {name} | {r['strict']} | {cons_v} | {plau_v} | {r['harmful_rate']} |")
+        lines.append("")
+    else:
+        lines.append("Not available: run `src/analyze_noopioid.py` for the 3-option version.")
+        lines.append("")
+
+    # 10. Revisores humanos
+    lines.append("## 10. Human reviewers")
     lines.append("")
-    lines.append("| model | strict | consensus | plausible |")
-    lines.append("|---|---|---|---|")
-    for m in sorted(all_models, key=lambda m: -nop["models"][m]["consensus"]):
-        v = nop["models"][m]
-        lines.append(f"| {m} | {v['strict']:.3f} | {v['consensus']:.3f} | "
-                     f"{v['plausibility']:.3f} |")
+    ag = reviewers["agreement"]
+    if ag:
+        lines.append("### Inter-rater agreement")
+        lines.append("")
+        lines.append("| metric | raters | value |")
+        lines.append("|---|---|---|")
+        for r in ag:
+            raters = (f"{r.get('rater_a','')} vs {r.get('rater_b','')}"
+                      if r.get("rater_a") else "all raters")
+            lines.append(f"| {r['metric']} | {raters} | {float(r['value']):.3f} |")
+        lines.append("")
+    ap = reviewers["appropriateness"]
+    if ap:
+        lines.append("### Appropriateness by unit (majority approval)")
+        lines.append("")
+        lines.append("| unit | kind | n_windows | majority |")
+        lines.append("|---|---|---|---|")
+        for r in ap:
+            lines.append(f"| {r['unit']} | {r['kind']} | {r['n_windows']} | "
+                         f"{float(r['majority']):.3f} |")
+        lines.append("")
+
+    # 11. Nivel de razonamiento por modelo
+    lines.append("## 11. Reasoning / temperature by model")
     lines.append("")
+    lines.append("| model | temperature / reasoning |")
+    lines.append("|---|---|")
+    for m in sorted(all_models):
+        lines.append(f"| {disp(m)} | {TEMPERATURE.get(m, '0 (no reasoning)')} |")
+    lines.append("")
+
     (OUT / "report.md").write_text("\n".join(lines), encoding="utf-8")
     print(f"  {OUT.relative_to(ROOT) / 'report.md'}")
 
@@ -920,7 +1013,7 @@ def make_subgroup_plots(nop, hflag, human_safety, models):
 
     def _rank_chart(metric, ceiling, fname):
         ms = sorted(models, key=lambda m: -acc[m][metric])
-        labels = ["human ceiling"] + [disp(m) for m in ms]
+        labels = ["human reference zone (full information, 5 options, plausible)"] + [disp(m) for m in ms]
         values = [ceiling] + [acc[m][metric] for m in ms]
         y = list(range(len(labels)))
         fig, ax = plt.subplots(figsize=(10, 7.5))
@@ -934,7 +1027,7 @@ def make_subgroup_plots(nop, hflag, human_safety, models):
         ax.set_xlabel("Accuracy (no-opioid subgroup)")
         ax.set_xlim(0, 1)
         ax.set_title(f"Model ranking by {metric} (no-opioid subgroup)")
-        handles = [Patch(color=CAT_COLOR["human"], label="human ceiling")]
+        handles = [Patch(color=CAT_COLOR["human"], label="human reference zone (full information, 5 options, plausible)")]
         for c in present_cats:
             handles.append(Patch(color=CAT_COLOR[c], label=c))
         ax.legend(handles=handles, loc="lower right", fontsize=8)
@@ -1027,7 +1120,7 @@ def make_plots(acc, cf, hflag, human_safety, models):
     def _rank_chart(metric, ceiling, fname):
         ms = sorted([m for m in models if cat(m) != "determinist"],
                     key=lambda m: -acc[m][metric])
-        labels = ["human ceiling"] + [disp(m) for m in ms]
+        labels = ["human reference zone (full information, 5 options, plausible)"] + [disp(m) for m in ms]
         values = [ceiling] + [acc[m][metric] for m in ms]
         y = list(range(len(labels)))
 
@@ -1041,8 +1134,8 @@ def make_plots(acc, cf, hflag, human_safety, models):
         ax.invert_yaxis()
         ax.set_xlabel("Accuracy")
         ax.set_xlim(0, 1)
-        ax.set_title(f"Model ranking by {metric} (human ceiling as bar)")
-        handles = [Patch(color=CAT_COLOR["human"], label="human ceiling")]
+        ax.set_title(f"Model ranking by {metric} (human reference zone as bar)")
+        handles = [Patch(color=CAT_COLOR["human"], label="human reference zone (full information, 5 options, plausible)")]
         for c in sorted({cat(m) for m in ms}):
             handles.append(Patch(color=CAT_COLOR[c], label=c))
         ax.legend(handles=handles, loc="lower right", fontsize=8)

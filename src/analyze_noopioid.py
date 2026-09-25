@@ -153,7 +153,7 @@ def write_csv(path, rows, fieldnames):
 def _rank_chart(nop, models, metric, ceiling, fname):
     acc = {m: nop["models"][m] for m in models}
     ms = sorted(models, key=lambda m: -acc[m][metric])
-    labels = ["human ceiling"] + [analyze.disp(m) for m in ms]
+    labels = ["human reference zone (full information, 5 options, plausible)"] + [analyze.disp(m) for m in ms]
     values = [ceiling] + [acc[m][metric] for m in ms]
     y = list(range(len(labels)))
     fig, ax = plt.subplots(figsize=(10, 7.5))
@@ -167,7 +167,7 @@ def _rank_chart(nop, models, metric, ceiling, fname):
     ax.set_xlabel(f"Accuracy ({metric}, no-opioid subgroup)")
     ax.set_xlim(0, 1)
     ax.set_title(f"Model ranking by {metric} (no-opioid subgroup)")
-    handles = [Patch(color=analyze.CAT_COLOR["human"], label="human ceiling")]
+    handles = [Patch(color=analyze.CAT_COLOR["human"], label="human reference zone (full information, 5 options, plausible)")]
     for c in sorted({analyze.cat(m) for m in models}):
         handles.append(Patch(color=analyze.CAT_COLOR[c], label=c))
     ax.legend(handles=handles, loc="lower right", fontsize=8)
@@ -231,7 +231,7 @@ def _scatter(nop, hflag, models):
     print(f"  {IMG.relative_to(analyze.ROOT) / 'subgroup_harmful_vs_accuracy.png'}")
 
 
-def write_report(nop, hflag, models, ds):
+def write_report(nop, hflag, models, floors, ds):
     lines = []
     lines.append("# AnesLLM No-opioid Subgroup Analysis (3-option prompt)")
     lines.append("")
@@ -246,15 +246,18 @@ def write_report(nop, hflag, models, ds):
     lines.append("|---|---|---|---|---|")
     for m in sorted(models, key=lambda m: -nop["models"][m]["consensus"]):
         v = nop["models"][m]
-        lines.append(f"| {m} | {v['strict']:.3f} | {v['consensus']:.3f} | "
+        lines.append(f"| {analyze.disp(m)} | {v['strict']:.3f} | {v['consensus']:.3f} | "
                      f"{v['plausibility']:.3f} | {hflag[m]:.3f} |")
+    lines.append(f"| *always no_action (floor)* | {floors['floor_always_no_action']:.3f} | \u2014 | \u2014 | 0.000 |")
+    lines.append(f"| *previous action (floor)* | {floors['floor_previous_action']:.3f} | \u2014 | \u2014 | 0.000 |")
+    lines.append(f"| *random expected (floor)* | {floors['floor_random_expected']:.3f} | \u2014 | \u2014 | 0.000 |")
     lines.append("")
     lines.append("## 2. Red flags (harmful action rate)")
     lines.append("")
     lines.append("| model | harmful rate |")
     lines.append("|---|---|")
     for m in sorted(models, key=lambda m: hflag[m]):
-        lines.append(f"| {m} | {hflag[m]:.3f} |")
+        lines.append(f"| {analyze.disp(m)} | {hflag[m]:.3f} |")
     lines.append("")
     (OUT / "no_opioid_report.md").write_text("\n".join(lines), encoding="utf-8")
     print(f"  {OUT.relative_to(analyze.ROOT) / 'no_opioid_report.md'}")
@@ -281,13 +284,25 @@ def main():
     nop = analyze.no_opioid_subgroup(models, pred, gt)
     hflag = analyze.subgroup_red_flag_rate(models, pred, gt, ds, nop["wids"])
     human_safety = analyze.subgroup_human_safety(gt, ds, nop["wids"])
+    floors = analyze.ceilings_and_floors(gt, ds)
 
     # CSVs
-    write_csv(OUT / "no_opioid_subgroup.csv",
-              [{"model": m, "strict": round(nop["models"][m]["strict"], 4),
-                "consensus": round(nop["models"][m]["consensus"], 4),
-                "plausibility": round(nop["models"][m]["plausibility"], 4),
-                "harmful_rate": round(hflag[m], 4)} for m in models],
+    rows = [{"model": m, "strict": round(nop["models"][m]["strict"], 4),
+             "consensus": round(nop["models"][m]["consensus"], 4),
+             "plausibility": round(nop["models"][m]["plausibility"], 4),
+             "harmful_rate": round(hflag[m], 4)} for m in models]
+    rows += [
+        {"model": "floor_always_no_action",
+         "strict": round(floors["floor_always_no_action"], 4),
+         "consensus": "", "plausibility": "", "harmful_rate": 0.0},
+        {"model": "floor_previous_action",
+         "strict": round(floors["floor_previous_action"], 4),
+         "consensus": "", "plausibility": "", "harmful_rate": 0.0},
+        {"model": "floor_random_expected",
+         "strict": round(floors["floor_random_expected"], 4),
+         "consensus": "", "plausibility": "", "harmful_rate": 0.0},
+    ]
+    write_csv(OUT / "no_opioid_subgroup.csv", rows,
               ["model", "strict", "consensus", "plausibility", "harmful_rate"])
     write_csv(OUT / "no_opioid_subgroup_meta.csv",
               [{"n_windows": nop["n"],
@@ -304,7 +319,7 @@ def main():
     scatter_models = models
     _scatter(nop, hflag, scatter_models)
 
-    write_report(nop, hflag, models, ds)
+    write_report(nop, hflag, models, floors, ds)
     print("análisis no-opioide completo en", OUT)
 
 

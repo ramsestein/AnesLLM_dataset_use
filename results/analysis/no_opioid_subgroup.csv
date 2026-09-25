@@ -16,3 +16,6 @@ rules,0.4919,0.5153,0.9676,0.0
 pid,0.3712,0.3117,0.9063,0.0162
 clads,0.4486,0.427,0.9568,0.0
 fuzzy,0.436,0.427,0.9622,0.0
+floor_always_no_action,0.6432,,,0.0
+floor_previous_action,0.5604,,,0.0
+floor_random_expected,0.484,,,0.0

@@ -1,40 +1,48 @@
 # AnesLLM Benchmark Analysis (13 models)
 
 - Windows (test, vasopressor excluded): **3424**
-- **Human ceiling** (consensus vs result_1): 0.570 · (plausible {result_1, result_aux}): 0.816
-- Floors: always no_action 0.271 · previous action 0.325 · random 0.230
 
 ## 1. Accuracy against each reference
 
 | model | strict (result_real) | consensus (result_1) | plausible {1,aux} | weighted |
 |---|--|--|--|--|
 | gpt-5.4 | 0.271 | 0.327 | 0.484 | 0.225 |
-| deepseek-flash | 0.287 | 0.312 | 0.541 | 0.230 |
+| deepseek-4.1-flash | 0.287 | 0.312 | 0.541 | 0.230 |
 | gpt-6-sol | 0.273 | 0.289 | 0.492 | 0.209 |
 | jev | 0.246 | 0.285 | 0.437 | 0.202 |
-| claude-opus-4-8 | 0.245 | 0.284 | 0.452 | 0.202 |
+| opus-4.8 | 0.245 | 0.284 | 0.452 | 0.202 |
 | gpt-5.4-mini | 0.236 | 0.263 | 0.449 | 0.195 |
 | deepseek-v4-pro | 0.263 | 0.256 | 0.476 | 0.191 |
 | gemini-3.1-pro-preview | 0.248 | 0.250 | 0.439 | 0.182 |
-| claude-haiku-4-5-20251001 | 0.216 | 0.227 | 0.425 | 0.180 |
+| haiku-4.5 | 0.216 | 0.227 | 0.425 | 0.180 |
 | laya | 0.232 | 0.222 | 0.518 | 0.188 |
 | gpt-4o | 0.189 | 0.171 | 0.373 | 0.137 |
 | gemini-3.1-flash-lite | 0.181 | 0.170 | 0.362 | 0.132 |
 | medgemma:27b | 0.191 | 0.168 | 0.400 | 0.143 |
 
+## 2. Ceiling and floors
+
+| reference | strict accuracy |
+|---|---|
+| human ceiling (consensus vs result_1) | 0.570 |
+| human ceiling (plausible {result_1, result_aux}) | 0.816 |
+| floor: always no_action | 0.271 |
+| floor: previous action | 0.325 |
+| floor: random expected | 0.230 |
+
 ## 3. Classification quality
 
 | model | balanced acc | macro-F1 | Cohen κ | intervention index |
 |---|---|---|---|---|
-| deepseek-flash | 0.311 | 0.282 | 0.106 | 1.00 |
+| deepseek-4.1-flash | 0.311 | 0.282 | 0.106 | 1.00 |
 | deepseek-v4-pro | 0.330 | 0.259 | 0.113 | 1.12 |
 | gpt-6-sol | 0.316 | 0.257 | 0.104 | 0.93 |
 | gpt-5.4 | 0.292 | 0.241 | 0.085 | 0.74 |
-| claude-opus-4-8 | 0.293 | 0.228 | 0.079 | 0.90 |
+| opus-4.8 | 0.293 | 0.228 | 0.079 | 0.90 |
 | gpt-5.4-mini | 0.269 | 0.227 | 0.061 | 1.03 |
 | gemini-3.1-pro-preview | 0.323 | 0.226 | 0.094 | 1.00 |
 | jev | 0.236 | 0.200 | 0.046 | 0.75 |
-| claude-haiku-4-5-20251001 | 0.212 | 0.185 | 0.022 | 1.03 |
+| haiku-4.5 | 0.212 | 0.185 | 0.022 | 1.03 |
 | gemini-3.1-flash-lite | 0.282 | 0.162 | 0.058 | 1.28 |
 | gpt-4o | 0.255 | 0.161 | 0.045 | 1.27 |
 | medgemma:27b | 0.224 | 0.146 | 0.023 | 1.34 |
@@ -44,9 +52,9 @@
 
 | model | opposite direction | wrong drug | over-intervention | under-treatment | other |
 |---|---|---|---|---|---|
-| claude-haiku-4-5-20251001 | 0.105 | 0.173 | 0.197 | 0.178 | 0.131 |
-| claude-opus-4-8 | 0.049 | 0.162 | 0.171 | 0.244 | 0.129 |
-| deepseek-flash | 0.075 | 0.150 | 0.188 | 0.185 | 0.115 |
+| haiku-4.5 | 0.105 | 0.173 | 0.197 | 0.178 | 0.131 |
+| opus-4.8 | 0.049 | 0.162 | 0.171 | 0.244 | 0.129 |
+| deepseek-4.1-flash | 0.075 | 0.150 | 0.188 | 0.185 | 0.115 |
 | deepseek-v4-pro | 0.055 | 0.199 | 0.210 | 0.121 | 0.152 |
 | gemini-3.1-flash-lite | 0.078 | 0.250 | 0.249 | 0.044 | 0.199 |
 | gemini-3.1-pro-preview | 0.039 | 0.196 | 0.190 | 0.190 | 0.137 |
@@ -58,31 +66,49 @@
 | laya | 0.260 | 0.093 | 0.268 | 0.006 | 0.142 |
 | medgemma:27b | 0.130 | 0.221 | 0.264 | 0.014 | 0.180 |
 
-## 5. Reliability (case-clustered bootstrap, 95% CI)
+## 5. Red flags (harmful action rate)
+
+| model | harmful action rate |
+|---|---|
+| gpt-6-sol | 0.011 |
+| deepseek-4.1-flash | 0.015 |
+| deepseek-v4-pro | 0.021 |
+| gemini-3.1-pro-preview | 0.029 |
+| gpt-5.4 | 0.035 |
+| laya | 0.049 |
+| jev | 0.078 |
+| haiku-4.5 | 0.080 |
+| opus-4.8 | 0.080 |
+| gpt-4o | 0.094 |
+| gpt-5.4-mini | 0.112 |
+| medgemma:27b | 0.130 |
+| gemini-3.1-flash-lite | 0.162 |
+
+## 6. Reliability (case-clustered bootstrap, 95% CI)
 
 | model | consensus (CI) | plausible (CI) |
 |---|---|---|
 | gpt-5.4 | 0.327 [0.308, 0.346] | 0.484 [0.462, 0.508] |
-| deepseek-flash | 0.312 [0.295, 0.331] | 0.541 [0.523, 0.563] |
+| deepseek-4.1-flash | 0.312 [0.295, 0.331] | 0.541 [0.523, 0.563] |
 | gpt-6-sol | 0.289 [0.269, 0.307] | 0.492 [0.470, 0.519] |
 | jev | 0.285 [0.263, 0.308] | 0.437 [0.410, 0.463] |
-| claude-opus-4-8 | 0.284 [0.264, 0.305] | 0.452 [0.429, 0.476] |
+| opus-4.8 | 0.284 [0.264, 0.305] | 0.452 [0.429, 0.476] |
 | gpt-5.4-mini | 0.263 [0.245, 0.281] | 0.449 [0.427, 0.473] |
 | deepseek-v4-pro | 0.256 [0.239, 0.275] | 0.476 [0.454, 0.501] |
 | gemini-3.1-pro-preview | 0.250 [0.235, 0.268] | 0.439 [0.417, 0.466] |
-| claude-haiku-4-5-20251001 | 0.227 [0.209, 0.249] | 0.425 [0.399, 0.452] |
+| haiku-4.5 | 0.227 [0.209, 0.249] | 0.425 [0.399, 0.452] |
 | laya | 0.222 [0.202, 0.242] | 0.518 [0.490, 0.548] |
 | gpt-4o | 0.171 [0.154, 0.189] | 0.373 [0.347, 0.401] |
 | gemini-3.1-flash-lite | 0.170 [0.154, 0.189] | 0.362 [0.337, 0.386] |
 | medgemma:27b | 0.168 [0.151, 0.186] | 0.400 [0.372, 0.431] |
 
-## 6. Consistency (3 repeats)
+## 7. Consistency (3 repeats)
 
 | model | Fleiss κ | error rate stable | error rate unstable |
 |---|---|---|---|
-| claude-haiku-4-5-20251001 | 0.833 | 0.741 | 0.786 |
-| claude-opus-4-8 | 0.954 | 0.723 | 0.800 |
-| deepseek-flash | 0.717 | 0.687 | 0.688 |
+| haiku-4.5 | 0.833 | 0.741 | 0.786 |
+| opus-4.8 | 0.954 | 0.723 | 0.800 |
+| deepseek-4.1-flash | 0.717 | 0.687 | 0.688 |
 | deepseek-v4-pro | 0.774 | 0.770 | 0.760 |
 | gemini-3.1-flash-lite | 1.000 | 0.818 | — |
 | gemini-3.1-pro-preview | 0.904 | 0.775 | 0.800 |
@@ -94,33 +120,102 @@
 | laya | 1.000 | 0.727 | — |
 | medgemma:27b | 0.977 | 0.804 | 1.000 |
 
-## 7. Inter-model agreement
+## 8. Inter-model agreement
 
 - Fleiss κ (13 models): **0.187**
 - Majority-vote ensemble: **0.259**
 - Windows where all models fail: **603**
 
-## 8. No-opioid subgroup (no opioid/vasopressor in any reference)
+## 9. No-opioid subgroup (3-option prompt)
 
-- Windows: **555** · human consensus 0.679 · plausible 0.942
-- Class distribution: {'reduce_hypnotic': 131, 'no_action': 357, 'increase_hypnotic': 67}
+Dedicated 3-option evaluation (see `no_opioid_report.md`).
 
-| model | strict | consensus | plausible |
+| model | strict | consensus | plausible | harmful rate |
+|---|---|---|---|---|
+| deepseek-4.1-flash | 0.5063 | 0.5027 | 0.9622 | 0.0018 |
+| deepseek-v4-pro | 0.427 | 0.3676 | 0.9459 | 0.009 |
+| gemini-3.1-flash-lite | 0.2919 | 0.1946 | 0.7405 | 0.164 |
+| gemini-3.1-pro-preview | 0.4523 | 0.4108 | 0.9477 | 0.0072 |
+| gpt-4o | 0.2757 | 0.1459 | 0.7622 | 0.0955 |
+| gpt-5.4-mini | 0.4306 | 0.4793 | 0.7604 | 0.1441 |
+| gpt-5.4 | 0.5045 | 0.5405 | 0.8937 | 0.0559 |
+| gpt-6-sol | 0.4667 | 0.4468 | 0.9712 | 0.0018 |
+| haiku-4.5 | 0.4649 | 0.4991 | 0.818 | 0.0775 |
+| opus-4.8 | 0.4306 | 0.4162 | 0.8234 | 0.0903 |
+| medgemma:27b | 0.3369 | 0.2901 | 0.6775 | 0.2 |
+| laya | 0.1748 | 0.1351 | 0.3568 | 0.4162 |
+| jev | 0.4486 | 0.4883 | 0.818 | 0.0919 |
+| rules | 0.4919 | 0.5153 | 0.9676 | 0.0 |
+| pid | 0.3712 | 0.3117 | 0.9063 | 0.0162 |
+| clads | 0.4486 | 0.427 | 0.9568 | 0.0 |
+| fuzzy | 0.436 | 0.427 | 0.9622 | 0.0 |
+| *always no_action (floor)* | 0.6432 | — | — | 0.0 |
+| *previous action (floor)* | 0.5604 | — | — | 0.0 |
+| *random expected (floor)* | 0.484 | — | — | 0.0 |
+
+## 10. Human reviewers
+
+### Inter-rater agreement
+
+| metric | raters | value |
+|---|---|---|
+| percent_agreement | Carles vs Sandro | 0.764 |
+| cohen_kappa | Carles vs Sandro | 0.469 |
+| percent_agreement | Carles vs Yihao | 0.821 |
+| cohen_kappa | Carles vs Yihao | 0.609 |
+| percent_agreement | Sandro vs Yihao | 0.764 |
+| cohen_kappa | Sandro vs Yihao | 0.467 |
+| fleiss_kappa | all raters | 0.515 |
+
+### Appropriateness by unit (majority approval)
+
+| unit | kind | n_windows | majority |
 |---|---|---|---|
-| rules | 0.492 | 0.515 | 0.968 |
-| jev | 0.443 | 0.510 | 0.777 |
-| gpt-5.4 | 0.465 | 0.485 | 0.822 |
-| clads | 0.449 | 0.427 | 0.957 |
-| fuzzy | 0.436 | 0.427 | 0.962 |
-| gpt-6-sol | 0.413 | 0.389 | 0.885 |
-| claude-opus-4-8 | 0.371 | 0.353 | 0.762 |
-| gpt-5.4-mini | 0.319 | 0.350 | 0.629 |
-| deepseek-flash | 0.366 | 0.348 | 0.757 |
-| gemini-3.1-pro-preview | 0.404 | 0.330 | 0.872 |
-| pid | 0.371 | 0.312 | 0.906 |
-| deepseek-v4-pro | 0.391 | 0.297 | 0.838 |
-| claude-haiku-4-5-20251001 | 0.323 | 0.288 | 0.640 |
-| gemini-3.1-flash-lite | 0.270 | 0.189 | 0.730 |
-| gpt-4o | 0.277 | 0.162 | 0.732 |
-| medgemma:27b | 0.182 | 0.077 | 0.501 |
-| laya | 0.020 | 0.018 | 0.041 |
+| result_real (is_gt) | reference | 298 | 0.245 |
+| anesllm | policy | 298 | 0.463 |
+| clads | policy | 298 | 0.664 |
+| fuzzy | policy | 298 | 0.705 |
+| llm_direct | policy | 298 | 0.607 |
+| mpc | policy | 298 | 0.144 |
+| pid | policy | 298 | 0.289 |
+| rule | policy | 298 | 0.762 |
+| result_1 | benchmark | 298 | 0.266 |
+| result_aux | benchmark | 298 | 0.545 |
+| clads | model | 13 | 0.615 |
+| claude-haiku-4-5-20251001 | model | 13 | 0.273 |
+| claude-opus-4-8 | model | 13 | 0.545 |
+| deepseek-v4.1-flash | model | 13 | 0.625 |
+| deepseek-v4-pro | model | 13 | 0.583 |
+| fuzzy | model | 13 | 0.615 |
+| gemini-3.1-flash-lite | model | 13 | 0.545 |
+| gemini-3.1-pro-preview | model | 13 | 0.583 |
+| gpt-4o | model | 13 | 0.545 |
+| gpt-5.4 | model | 13 | 0.462 |
+| gpt-5.4-mini | model | 13 | 0.600 |
+| gpt-6-sol | model | 13 | 0.667 |
+| jev | model | 13 | 0.583 |
+| medgemma:27b | model | 13 | 0.200 |
+| pid | model | 13 | 0.364 |
+| rules | model | 13 | 0.769 |
+
+## 11. Reasoning / temperature by model
+
+| model | temperature / reasoning |
+|---|---|
+| clads | N/A (deterministic) |
+| haiku-4.5 | 0 (no reasoning) |
+| opus-4.8 | default (thinking off) |
+| deepseek-4.1-flash | 0 (no reasoning) |
+| deepseek-v4-pro | 0 (no reasoning) |
+| fuzzy | N/A (deterministic) |
+| gemini-3.1-flash-lite | 0 (no reasoning) |
+| gemini-3.1-pro-preview | 0 (no reasoning) |
+| gpt-4o | 0 (no reasoning) |
+| gpt-5.4 | 0 (no reasoning) |
+| gpt-5.4-mini | 0 (no reasoning) |
+| gpt-6-sol | default (reasoning) |
+| jev | N/A (classifier) |
+| laya | N/A (classifier) |
+| medgemma:27b | 0 (no reasoning) |
+| pid | N/A (deterministic) |
+| rules | N/A (deterministic) |
