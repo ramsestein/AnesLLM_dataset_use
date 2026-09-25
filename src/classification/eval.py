@@ -39,6 +39,21 @@ MANIFEST = ROOT / "dataset" / "reports" / "split_manifest.csv"
 ACTIONS = ["increase_hypnotic", "reduce_hypnotic", "increase_opioid",
            "reduce_opioid", "no_action"]
 
+# subgrupo no-opioide (mismo criterio que src/determinist/common.py)
+OPIOID = {"increase_opioid", "reduce_opioid"}
+VASO = {"vasopressor"}
+EXCLUDED = OPIOID | VASO
+
+
+def is_no_opioid(rec):
+    """True si ninguna referencia (result_real/result_1/result_aux) es opioide ni vasopressor."""
+    out = rec.get("output", {})
+    r1 = (out.get("result_1") or {}).get("action")
+    raux = (out.get("result_aux") or {}).get("action")
+    rr = out.get("result_real")
+    return not (rr in EXCLUDED or r1 in EXCLUDED or raux in EXCLUDED)
+
+
 # descripciones cortas de cada opción para el modelo (claves = opciones)
 ACTION_DESC = {
     "increase_hypnotic": "deepen anesthesia (raise hypnotic, e.g. more propofol)",
@@ -208,6 +223,8 @@ def main():
     ap.add_argument("--batch-size", type=int, default=64)
     ap.add_argument("--max-len", type=int, default=1024,
                     help="laya max context tokens")
+    ap.add_argument("--no-opioid", action="store_true",
+                    help="restringir al subgrupo sin opioide ni vasopressor")
     args = ap.parse_args()
 
     load_env()
@@ -239,6 +256,9 @@ def main():
     for f in sorted(data_dir.glob("case*.jsonl")):
         for line in open(f, encoding="utf-8"):
             all_windows.append(json.loads(line))
+
+    if args.no_opioid:
+        all_windows = [w for w in all_windows if is_no_opioid(w)]
 
     if args.limit and args.limit < len(all_windows):
         rng = random.Random(args.seed)

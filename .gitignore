@@ -14,3 +14,6 @@ results/data_results/
 
 # Logs de evaluación
 results/logs/
+
+# Supp de colocaciones temporales
+src/plot_offsets.py
