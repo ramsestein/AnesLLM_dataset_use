@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Utilidades compartidas para los baselines deterministas (rules, pid, clads, fuzzy, mpc).
+"""Utilidades compartidas para los baselines deterministas (rules, pid, clads, fuzzy).
 
 Cada estrategia se ejecuta sobre el test set completo y se guarda en
 results/data_results/<name>/test.jsonl (mismo formato que los LLMs) más
@@ -10,7 +10,7 @@ import json
 import random
 from pathlib import Path
 
-from config import MAP_ACC_LO, MAP_ACC_HI, HR_MARG_LO
+from config import MAP_ACC_LO
 
 ROOT = Path(__file__).resolve().parent.parent.parent  # src/determinist -> raíz
 DATA = ROOT / "dataset" / "data" / "test"
@@ -21,6 +21,11 @@ ACTIONS = ["increase_hypnotic", "reduce_hypnotic", "increase_opioid",
            "reduce_opioid", "no_action"]
 ACTION_TO_LETTER = {a: chr(ord("a") + i) for i, a in enumerate(ACTIONS)}
 LETTER_TO_ACTION = {ch: a for a, ch in ACTION_TO_LETTER.items()}
+
+# Acciones fuera del alcance de los controladores (solo hipnótico/no_action)
+OPIOID = {"increase_opioid", "reduce_opioid"}
+VASO = {"vasopressor"}
+EXCLUDED = OPIOID | VASO
 
 
 def load_difficulty():
@@ -70,35 +75,18 @@ def map_action(action):
 
 
 def apply_analgesia(policy_action, row):
-    """Lazo de analgesia (opioide) sobre la decisión hipnótica, por tendencias.
+    """Gate de seguridad sin reglas de opioides.
 
-    1. MAP < 65          -> no_action      (seguridad, sin vasopresor)
-    2. FC < HR_MARG_LO   -> reduce_opioid  (bradicardia → exceso de opioide)
-    3. hipnótico (BIS) tiene prioridad si actúa
-    4. nocicepción -> increase_opioid:
-         taquicardia (FC subiendo rápido o > 90)
-         + hipertenso (MAP > MAP_ACC_HI)
-         + BIS subiendo rápido (tendencia, no valor)
-    5. no_action
+    Los controladores solo emiten no_action o hipnótico (nunca opioides):
+    1. MAP < MAP_ACC_LO -> no_action (seguridad)
+    2. en otro caso, la acción hipnótica de la política
     """
     map_v = row.get("map_current")
-    hr = row.get("hr_current")
-    hr_trend = row.get("hr_trend")
-    bis_trend = row.get("bis_trend")
-
     if map_v is not None and map_v < MAP_ACC_LO:
         return "no_action"
-    if hr is not None and hr < HR_MARG_LO:
-        return "reduce_opioid"
-    if policy_action in ("increase_hypnotic", "reduce_hypnotic"):
+    if policy_action in ("increase_hypnotic", "reduce_hypnotic", "no_action"):
         return policy_action
-
-    tachy = (hr is not None and hr > 90) or (hr_trend == "rising")
-    hyper = map_v is not None and map_v > MAP_ACC_HI
-    bis_up = bis_trend == "rising"
-    if tachy and hyper and bis_up:
-        return "increase_opioid"
-    return policy_action
+    return "no_action"
 
 
 def evaluate(policy_factory, name):
@@ -117,13 +105,21 @@ def evaluate(policy_factory, name):
     for rec in windows:
         wid = rec["window_id"]
         case_id = rec["case_id"]
+        # Solo el subgrupo no-opioide: ninguna referencia (result_real, result_1,
+        # result_aux) es opioide ni vasopressor.
+        out = rec.get("output", {})
+        r1 = (out.get("result_1") or {}).get("action")
+        raux = (out.get("result_aux") or {}).get("action")
+        rr = out.get("result_real")
+        if rr in EXCLUDED or r1 in EXCLUDED or raux in EXCLUDED:
+            continue
         if case_id != current_case:
             current_case = case_id
             policy.reset()
         try:
             row = build_row(rec["input"])
             action = policy.decide(row)
-            # lazo de analgesia compartido para poder emitir opioides
+            # gate de seguridad (sin reglas de opioides)
             action = apply_analgesia(action, row)
         except Exception as e:
             action = "error"

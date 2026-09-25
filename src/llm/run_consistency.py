@@ -12,7 +12,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent.parent.parent
 PY = sys.executable  # mismo intérprete
 
 LIMIT = 100
@@ -49,7 +49,7 @@ def main():
     procs = []
     for model, backend, workers in MODELS:
         cmd = [
-            PY, str(ROOT / "src" / "eval.py"),
+            PY, str(ROOT / "src" / "llm" / "eval.py"),
             "--model", model,
             "--backend", backend,
             "--split", SPLIT,

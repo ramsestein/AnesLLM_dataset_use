@@ -4,15 +4,14 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from common import evaluate, write_test, write_consistency
+from common import evaluate, write_test
 from policies.pid_policy import PIDPolicy
 
 
 def main():
     preds = evaluate(lambda: PIDPolicy(), "pid")
     n = write_test("pid", preds)
-    m = write_consistency("pid", preds)
-    print(f"pid: {n} test, {m} consistencia")
+    print(f"pid: {n} test")
 
 
 if __name__ == "__main__":

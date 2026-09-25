@@ -1,0 +1,8 @@
+﻿metric,rater_a,rater_b,n_items,n_windows,n_cases,value
+percent_agreement,Carles,Sandro,907,298,272,0.7641
+cohen_kappa,Carles,Sandro,907,298,272,0.4686
+percent_agreement,Carles,Yihao,907,298,272,0.8214
+cohen_kappa,Carles,Yihao,907,298,272,0.6094
+percent_agreement,Sandro,Yihao,907,298,272,0.7641
+cohen_kappa,Sandro,Yihao,907,298,272,0.4665
+fleiss_kappa,,,907,298,272,0.5153

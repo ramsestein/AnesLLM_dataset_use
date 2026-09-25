@@ -11,3 +11,6 @@ venv/
 # Datos y resultados pesados
 dataset/data/
 results/data_results/
+
+# Logs de evaluación
+results/logs/

@@ -125,9 +125,5 @@ class CLADSPolicy(PolicyBase):
             if not self._suppress(proposed):
                 action = proposed
 
-        elif hr_v < HR_MARG_LO:
-            # Bradycardia guard  
-            action = "reduce_opioid"
-
         self._history.append(action)
         return action

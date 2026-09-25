@@ -9,11 +9,10 @@ from rules import main as run_rules
 from pid import main as run_pid
 from clads import main as run_clads
 from fuzzy import main as run_fuzzy
-from mpc import main as run_mpc
 
 
 def main():
-    for fn in (run_rules, run_pid, run_clads, run_fuzzy, run_mpc):
+    for fn in (run_rules, run_pid, run_clads, run_fuzzy):
         fn()
 
 

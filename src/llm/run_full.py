@@ -24,7 +24,7 @@ def main():
     procs = []
     for model, backend, workers in MODELS:
         cmd = [
-            PY, str(ROOT / "src" / "eval.py"),
+            PY, str(ROOT / "src" / "llm" / "eval.py"),
             "--model", model,
             "--backend", backend,
             "--split", SPLIT,

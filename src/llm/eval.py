@@ -24,10 +24,10 @@ import time
 import urllib.error
 import urllib.request
 from collections import Counter
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent.parent.parent
 DATA = ROOT / "dataset" / "data"
 PROMPT_PATH = Path(__file__).resolve().parent / "prompt.txt"
 MANIFEST = ROOT / "dataset" / "reports" / "split_manifest.csv"
@@ -262,14 +262,16 @@ def render_case(inp):
         lines.append(f"Monitoring: {MONITORING.get(inp['monitoring_type'], inp['monitoring_type'])}.")
 
     # --- vitales actuales ---
+    # Campos en minúsculas (valores suavizados/imputados, >97% cobertura).
+    # Las mayúsculas (HR_current/MAP_current/...) son el valor instantáneo de
+    # línea arterial y están nulas en ~50% de ventanas (NIBP), y difieren del
+    # valor que usan controladores deterministas y red flags.
     vit = []
-    for name, label, unit in [("HR_current", "HR", "bpm"),
-                              ("MAP_current", "MAP", "mmHg"),
-                              ("SBP_current", "SBP", "mmHg"),
-                              ("DBP_current", "DBP", "mmHg"),
-                              ("SpO2_current", "SpO2", "%"),
-                              ("EtCO2_current", "EtCO2", "mmHg"),
-                              ("BIS_current", "BIS", "")]:
+    for name, label, unit in [("hr_current", "HR", "bpm"),
+                              ("map_current", "MAP", "mmHg"),
+                              ("spo2_current", "SpO2", "%"),
+                              ("etco2_current", "EtCO2", "mmHg"),
+                              ("bis_current", "BIS", "")]:
         v = fmt(inp.get(name))
         if v is not None:
             vit.append(f"{label} {v}" + (f" {unit}" if unit else ""))
@@ -339,6 +341,26 @@ def strip_letter(text, letter):
 def sanitize(name):
     """Reemplaza caracteres no válidos en rutas de Windows."""
     return re.sub(r'[<>:"/\\|?*]', "_", name)
+
+
+def classify_err(raw):
+    """Clasifica el mensaje de error de una respuesta fallida (para el progreso en vivo)."""
+    s = raw or ""
+    if "402" in s or "Payment Required" in s:
+        return "402 payment"
+    if "429" in s or "Too Many Requests" in s or "RateLimit" in s or "quota" in s.lower():
+        return "429 rate-limit"
+    if "10061" in s or "Connection refused" in s or "No se puede" in s:
+        return "conn-refused"
+    if "401" in s or "Unauthorized" in s or "api key" in s.lower():
+        return "401 auth"
+    if "404" in s or "Not Found" in s:
+        return "404 not-found"
+    if "500" in s or "502" in s or "503" in s:
+        return "5xx server"
+    if "empty response" in s:
+        return "empty"
+    return "other"
 
 
 # ---------------------------------------------------------------- main
@@ -440,7 +462,7 @@ def main():
         name = sanitize(args.model)
         if args.repeats > 1:
             name += f"_repeats{args.repeats}"
-        out_dir = ROOT / "results" / name
+        out_dir = ROOT / "results" / "data_results" / name
     out_dir.mkdir(parents=True, exist_ok=True)
     out_file = out_dir / f"{args.split}.jsonl"
 
@@ -502,17 +524,8 @@ def main():
             time.sleep(1.0)
         return {"letter": None, "raw": f"ERROR: {last_err}", "explanation": "", "error": True}
 
-    window_res = [[] for _ in windows]
-    done_tasks = 0
-    with ThreadPoolExecutor(max_workers=args.workers) as ex:
-        for (i, _), res in zip(tasks, ex.map(run_task, tasks)):
-            window_res[i].append(res)
-            done_tasks += 1
-            if done_tasks % 500 == 0:
-                print(f"  {done_tasks}/{len(tasks)} requests")
-
-    records = []
-    for i, rec in enumerate(windows):
+    def make_record(i):
+        rec = windows[i]
         wid = rec["window_id"]
         case_id = rec["case_id"]
         result_real = rec["output"]["result_real"]
@@ -552,13 +565,54 @@ def main():
             first = resps[0] if resps else {}
             rec_out["raw_response"] = first.get("raw")
             rec_out["explanation"] = first.get("explanation", "")
-        records.append(rec_out)
+        return rec_out
+
+    # escribe primero las ventanas ya válidas (resume) para no perderlas
+    with open(out_file, "w", encoding="utf-8") as fh:
+        for rec_out in existing.values():
+            fh.write(json.dumps(rec_out, ensure_ascii=False) + "\n")
+
+    window_res = [[] for _ in windows]
+    pending = [args.repeats] * len(windows)
+    done_windows = 0
+    n_ok = n_err = 0
+    err_kinds = Counter()
+    seen_kinds = set()
+
+    def live_status(force=False):
+        new_kinds = [k for k in err_kinds if k not in seen_kinds]
+        for k in new_kinds:
+            seen_kinds.add(k)
+        if force or done_windows % 25 == 0 or new_kinds:
+            parts = [f"{done_windows}/{len(windows)} windows"]
+            if err_kinds:
+                parts.append(" | ".join(f"{k}: {v}" for k, v in err_kinds.most_common()))
+            print("  " + "  ".join(parts), flush=True)
+
+    with ThreadPoolExecutor(max_workers=args.workers) as ex:
+        futs = {ex.submit(run_task, t): t[0] for t in tasks}
+        for f in as_completed(futs):
+            i = futs[f]
+            res = f.result()
+            window_res[i].append(res)
+            if res.get("error"):
+                n_err += 1
+                err_kinds[classify_err(res.get("raw") or "")] += 1
+            else:
+                n_ok += 1
+            pending[i] -= 1
+            if pending[i] == 0:
+                rec_out = make_record(i)
+                with open(out_file, "a", encoding="utf-8") as fh:
+                    fh.write(json.dumps(rec_out, ensure_ascii=False) + "\n")
+                done_windows += 1
+                live_status()
+
+    live_status(force=True)
+    print(f"  terminado: {done_windows} ventanas nuevas (respuestas ok={n_ok}, err={n_err})")
 
     # fusiona con lo ya guardado (resume) y escribe
-    merged = list(existing.values()) + records
-    with open(out_file, "w", encoding="utf-8") as fh:
-        for rec_out in merged:
-            fh.write(json.dumps(rec_out, ensure_ascii=False) + "\n")
+    merged = list(existing.values()) + [make_record(i) for i in range(len(windows))]
 
     summary = compute_summary(merged, args.model, args.backend, args.split, args.repeats)
     with open(out_dir / "summary.json", "w", encoding="utf-8") as fh:

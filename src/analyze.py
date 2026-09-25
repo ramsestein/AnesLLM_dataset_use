@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Análisis completo del benchmark AnesLLM (18 modelos: 11 LLM + 2 clasificación + 5 deterministas).
+"""Análisis completo del benchmark AnesLLM (17 modelos: 11 LLM + 2 clasificación + 4 deterministas).
 
 Lee results/test_all.csv y results/consistency_all.csv (ya filtrados de vasopressor)
 y el dataset (dataset/data/test/*.jsonl) para red flags y suelo de "acción previa".
@@ -44,7 +44,6 @@ TEMPERATURE = {
     "gpt-6-sol": "default (no 0)", "claude-opus-4-8": "default (no 0)",
     "rules": "N/A (determinista)", "pid": "N/A (determinista)",
     "clads": "N/A (determinista)", "fuzzy": "N/A (determinista)",
-    "mpc": "N/A (determinista)",
 }
 
 
@@ -649,6 +648,7 @@ def main():
 
     gt = build_ground_truth(test_rows)
     models, pred = build_predictions(test_rows)
+    full_models = [m for m in models if cat(m) != "determinist"]
     case_windows = defaultdict(list)
     for w in gt:
         case_windows[gt[w]["case_id"]].append(w)
@@ -656,16 +656,16 @@ def main():
     print(f"{len(models)} modelos, {len(gt)} ventanas, {len(case_windows)} casos")
 
     # --- sección 1-2: acierto + techo/suelo
-    acc = accuracy_metrics(models, pred, gt)
+    acc = accuracy_metrics(full_models, pred, gt)
     cf = ceilings_and_floors(gt, ds)
     write_csv(OUT / "metrics_summary.csv",
-              [{"model": m, **acc[m]} for m in models],
+              [{"model": m, **acc[m]} for m in full_models],
               ["model", "n", "strict", "consensus", "plausibility", "weighted"])
     write_csv(OUT / "ceilings_floors.csv", [cf],
               list(cf.keys()))
 
     # --- sección 3: clasificación
-    clf = classification_metrics(models, pred, gt, ds)
+    clf = classification_metrics(full_models, pred, gt, ds)
     write_csv(OUT / "classification.csv",
               [{"model": m,
                 "balanced_accuracy": round(v["balanced_accuracy"], 4),
@@ -678,7 +678,7 @@ def main():
                for m, v in clf.items()],
               ["model", "balanced_accuracy", "macro_f1", "cohen_kappa",
                "intervention_index", "same_as_previous_model", "same_as_previous_clinician"])
-    for m in models:
+    for m in full_models:
         cm = clf[m]["confusion"]
         rows = []
         for a in ACTIONS:
@@ -688,28 +688,28 @@ def main():
                   ["actual"] + ACTIONS)
 
     # --- sección 4: errores + red flags
-    tax = error_taxonomy(models, pred, gt)
+    tax = error_taxonomy(full_models, pred, gt)
     write_csv(OUT / "error_taxonomy.csv",
-              [{"model": m, **tax[m]} for m in models],
+              [{"model": m, **tax[m]} for m in full_models],
               ["model", "correct", "opposite_direction", "wrong_drug",
                "over_intervention", "under_treatment", "other", "invalid"])
-    rf = red_flags(models, pred, gt, ds)
+    rf = red_flags(full_models, pred, gt, ds)
     write_csv(OUT / "red_flags.csv",
               [{"model": m, **{k: round(v, 4) for k, v in rf[m].items() if k != "n"},
-                "n": rf[m]["n"]} for m in models],
+                "n": rf[m]["n"]} for m in full_models],
               ["model", "n"] + list(RED_FLAGS.keys()))
 
     # --- sección 5: fiabilidad
-    diff = difficulty_stratification(models, pred, gt)
+    diff = difficulty_stratification(full_models, pred, gt)
     write_csv(OUT / "difficulty.csv",
-              [{"model": m, **diff[m]} for m in models],
+              [{"model": m, **diff[m]} for m in full_models],
               ["model", "easy", "medium", "hard"])
-    mcn = paired_mcnemar(models, pred, gt)
+    mcn = paired_mcnemar(full_models, pred, gt)
     write_csv(OUT / "paired_mcnemar.csv",
               [{"model_a": a, "model_b": b, "mcnemar_p": round(p, 6)}
                for (a, b), p in sorted(mcn.items())],
               ["model_a", "model_b", "mcnemar_p"])
-    boot = bootstrap_accuracy(models, pred, gt, case_windows)
+    boot = bootstrap_accuracy(full_models, pred, gt, case_windows)
     write_csv(OUT / "bootstrap_ci.csv",
               [{"model": m,
                 "strict": round(v["strict"][0], 4),
@@ -745,7 +745,7 @@ def main():
                "error_rate_stable", "error_rate_unstable", "fleiss_kappa"])
 
     # --- sección 7: acuerdo entre modelos
-    agree = model_agreement(models, pred, gt)
+    agree = model_agreement(full_models, pred, gt)
     write_csv(OUT / "model_agreement.csv",
               [{"fleiss_kappa_models": round(agree["fleiss_kappa_models"], 4),
                 "ensemble_majority_accuracy": round(agree["ensemble_majority_accuracy"], 4),
@@ -783,15 +783,15 @@ def main():
     make_subgroup_plots(nop, nop_hflag, nop_human_safety, models)
 
     # --- reporte Markdown
-    write_report(acc, cf, clf, tax, rf, diff, boot, cons, agree, nop, models)
-    hflag = harmful_action_rate(models, pred, gt, ds)
-    make_plots(acc, cf, hflag, human_safety, models)
+    write_report(acc, cf, clf, tax, rf, diff, boot, cons, agree, nop, full_models, models)
+    hflag = harmful_action_rate(full_models, pred, gt, ds)
+    make_plots(acc, cf, hflag, human_safety, full_models)
     print("análisis completo en", OUT)
 
 
-def write_report(acc, cf, clf, tax, rf, diff, boot, cons, agree, nop, models):
+def write_report(acc, cf, clf, tax, rf, diff, boot, cons, agree, nop, full_models, all_models):
     lines = []
-    lines.append(f"# AnesLLM Benchmark Analysis ({len(models)} models)")
+    lines.append(f"# AnesLLM Benchmark Analysis ({len(full_models)} models)")
     lines.append("")
     lines.append(f"- Windows (test, vasopressor excluded): **{cf['n_windows']}**")
     lines.append(f"- **Human ceiling** (consensus vs result_1): {cf['human_consensus']:.3f} · "
@@ -804,7 +804,7 @@ def write_report(acc, cf, clf, tax, rf, diff, boot, cons, agree, nop, models):
     lines.append("")
     lines.append("| model | strict (result_real) | consensus (result_1) | plausible {1,aux} | weighted |")
     lines.append("|---|--|--|--|--|")
-    for m in sorted(models, key=lambda m: -acc[m]["consensus"]):
+    for m in sorted(full_models, key=lambda m: -acc[m]["consensus"]):
         lines.append(f"| {m} | {acc[m]['strict']:.3f} | {acc[m]['consensus']:.3f} | "
                      f"{acc[m]['plausibility']:.3f} | {acc[m]['weighted']:.3f} |")
     lines.append("")
@@ -812,7 +812,7 @@ def write_report(acc, cf, clf, tax, rf, diff, boot, cons, agree, nop, models):
     lines.append("")
     lines.append("| model | balanced acc | macro-F1 | Cohen κ | intervention index |")
     lines.append("|---|---|---|---|---|")
-    for m in sorted(models, key=lambda m: -clf[m]["macro_f1"]):
+    for m in sorted(full_models, key=lambda m: -clf[m]["macro_f1"]):
         v = clf[m]
         ii = f"{v['intervention_index']:.2f}" if v["intervention_index"] is not None else "—"
         lines.append(f"| {m} | {v['balanced_accuracy']:.3f} | {v['macro_f1']:.3f} | "
@@ -822,7 +822,7 @@ def write_report(acc, cf, clf, tax, rf, diff, boot, cons, agree, nop, models):
     lines.append("")
     lines.append("| model | opposite direction | wrong drug | over-intervention | under-treatment | other |")
     lines.append("|---|---|---|---|---|---|")
-    for m in sorted(models):
+    for m in sorted(full_models):
         t = tax[m]
         n = sum(t.values()) or 1
         lines.append(f"| {m} | {t.get('opposite_direction',0)/n:.3f} | "
@@ -833,7 +833,7 @@ def write_report(acc, cf, clf, tax, rf, diff, boot, cons, agree, nop, models):
     lines.append("")
     lines.append("| model | consensus (CI) | plausible (CI) |")
     lines.append("|---|---|---|")
-    for m in sorted(models, key=lambda m: -boot[m]["consensus"][0]):
+    for m in sorted(full_models, key=lambda m: -boot[m]["consensus"][0]):
         c = boot[m]["consensus"]
         p = boot[m]["plausibility"]
         lines.append(f"| {m} | {c[0]:.3f} [{c[1]:.3f}, {c[2]:.3f}] | "
@@ -843,7 +843,7 @@ def write_report(acc, cf, clf, tax, rf, diff, boot, cons, agree, nop, models):
     lines.append("")
     lines.append("| model | Fleiss κ | error rate stable | error rate unstable |")
     lines.append("|---|---|---|---|")
-    for m in sorted(models):
+    for m in sorted(full_models):
         v = cons[m]
         eu = f"{v['error_rate_unstable']:.3f}" if v["error_rate_unstable"] is not None else "—"
         es = f"{v['error_rate_stable']:.3f}" if v["error_rate_stable"] is not None else "—"
@@ -851,7 +851,7 @@ def write_report(acc, cf, clf, tax, rf, diff, boot, cons, agree, nop, models):
     lines.append("")
     lines.append("## 7. Inter-model agreement")
     lines.append("")
-    lines.append(f"- Fleiss κ ({len(models)} models): **{agree['fleiss_kappa_models']:.3f}**")
+    lines.append(f"- Fleiss κ ({len(full_models)} models): **{agree['fleiss_kappa_models']:.3f}**")
     lines.append(f"- Majority-vote ensemble: **{agree['ensemble_majority_accuracy']:.3f}**")
     lines.append(f"- Windows where all models fail: **{agree['windows_all_fail']}**")
     lines.append("")
@@ -863,7 +863,7 @@ def write_report(acc, cf, clf, tax, rf, diff, boot, cons, agree, nop, models):
     lines.append("")
     lines.append("| model | strict | consensus | plausible |")
     lines.append("|---|---|---|---|")
-    for m in sorted(models, key=lambda m: -nop["models"][m]["consensus"]):
+    for m in sorted(all_models, key=lambda m: -nop["models"][m]["consensus"]):
         v = nop["models"][m]
         lines.append(f"| {m} | {v['strict']:.3f} | {v['consensus']:.3f} | "
                      f"{v['plausibility']:.3f} |")
@@ -872,7 +872,7 @@ def write_report(acc, cf, clf, tax, rf, diff, boot, cons, agree, nop, models):
     print(f"  {OUT.relative_to(ROOT) / 'report.md'}")
 
 
-DETERMINIST = {"rules", "pid", "clads", "fuzzy", "mpc"}
+DETERMINIST = {"rules", "pid", "clads", "fuzzy"}
 CLASSIFIERS = {"laya", "jev"}
 DISPLAY = {
     "deepseek-flash": "deepseek-4.1-flash",
@@ -961,13 +961,23 @@ def make_subgroup_plots(nop, hflag, human_safety, models):
 
     OFFSETS = [(7, 5), (7, -9), (-5, 7), (-5, -9), (9, 0), (9, -6), (-7, -4), (-7, 4)]
     OVERRIDES = {
-        "gpt-5.4-mini": (0, -14),
+        "clads": (0, 16),
+        "fuzzy": (-16, -6),
+        "deepseek-4.1-flash": (0, 14),
+        "gpt-6-sol": (14, 10),
+        "deepseek-v4-pro": (0, -14),
+        "rules": (0, -16),
+        "gemini-3.1-pro-preview": (0, -18),
+        "pid": (18, 0),
+        "gpt-5.4": (0, -14),
+        "laya": (14, 6),
+        "haiku-4.5": (0, 14),
+        "jev": (0, 14),
+        "opus-4.8": (0, -14),
         "gpt-4o": (0, -14),
-        "opus-4.8": (0, 16),
-        "deepseek-4.1-flash": (0, 16),
-        "gemini-3.1-pro-preview": (0, -14),
-        "fuzzy": (20, 0),
-        "rules": (20, 0),
+        "gpt-5.4-mini": (0, -14),
+        "medgemma:27b": (0, -14),
+        "gemini-3.1-flash-lite": (0, -14),
     }
 
     fig, ax = plt.subplots(figsize=(16, 8))
@@ -986,9 +996,9 @@ def make_subgroup_plots(nop, hflag, human_safety, models):
     ax.set_xlabel("Combined accuracy (plausible) \u2014 no-opioid subgroup")
     ax.set_ylabel("1 \u2212 harmful action rate (red flags, higher = better)")
     ax.set_title("Accuracy vs safety (red flags, no-opioid subgroup)")
-    ax.set_xlim(0.3, 1.0)
+    ax.set_xlim(0.0, 1.0)
     ax.set_ylim(0.78, 1.02)
-    ax.set_xticks([round(0.3 + i * 0.1, 2) for i in range(8)])
+    ax.set_xticks([round(i * 0.1, 2) for i in range(11)])
     ax.set_yticks([round(0.8 + i * 0.05, 2) for i in range(5)])
     handles = [Patch(facecolor="green", alpha=0.4,
                      label=f"human zone (acc \u2265 {acc_plausible:.2f}, "
@@ -1068,17 +1078,21 @@ def make_plots(acc, cf, hflag, human_safety, models):
 
     # offsets escalonados para que las etiquetas no se solapen
     OFFSETS = [(7, 5), (7, -9), (-5, 7), (-5, -9), (9, 0), (9, -6), (-7, -4), (-7, 4)]
-    # ajustes manuales por nombre de display
+    # ajustes manuales por nombre de display (separan etiquetas apiladas)
     OVERRIDES = {
-        "deepseek-4.1-flash": (14, 0),
-        "deepseek-v4-pro": (14, -6),
-        "gemini-3.1-pro-preview": (0, -14),
-        "gpt-6-sol": (0, 14),
-        "haiku-4.5": (0, 14),
-        "gpt-5.4-mini": (14, 0),
-        "gpt-4o": (14, 0),
-        "opus-4.8": (0, 16),
-        "gemini-3.1-flash-lite": (0, 14),
+        "gpt-6-sol": (0, 18),
+        "deepseek-4.1-flash": (0, 18),
+        "deepseek-v4-pro": (-22, 0),
+        "gemini-3.1-pro-preview": (-16, -18),
+        "gpt-5.4": (22, 2),
+        "laya": (14, 6),
+        "haiku-4.5": (0, 16),
+        "opus-4.8": (18, 8),
+        "jev": (0, -16),
+        "gpt-4o": (0, -14),
+        "gpt-5.4-mini": (16, 0),
+        "medgemma:27b": (0, -14),
+        "gemini-3.1-flash-lite": (0, -14),
     }
 
     fig, ax = plt.subplots(figsize=(16, 8))

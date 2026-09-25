@@ -59,10 +59,6 @@ class RuleBasedPolicy(PolicyBase):
         if bis < BIS_ACC_LO:         # < 40
             return "reduce_hypnotic"
 
-        # Priority 7: bradycardia
-        if hr_v < HR_MARG_LO:        # < 45
-            return "reduce_opioid"
-
         return "no_action"
 
     def reset(self) -> None:
