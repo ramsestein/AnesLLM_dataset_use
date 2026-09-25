@@ -111,24 +111,7 @@ Re-running the models requires API access and is described step by step in
 ## Ethics
 
 The study was conducted as an *in silico* development and evaluation study on the public,
-de-identified VitalDB dataset, with favourable opinion of the Research Ethics Committee (CEIm)
-of Hospital Clínic de Barcelona ([CEIM_CODE]).
-
-## Citation
-
-If you use this benchmark, please cite the paper and the dataset (see [CITATION.cff](CITATION.cff)):
-
-```bibtex
-@misc{anesllm_benchmark,
-  title  = {[PAPER_TITLE]},
-  author = {[AUTHORS]},
-  year   = {2026},
-  note   = {Dataset: [link_zenodo]}
-}
-```
-
-Please also cite VitalDB: Lee H-C, et al. *VitalDB, a high-fidelity multi-parameter vital signs
-database in surgical patients.* Sci Data 9, 279 (2022). https://doi.org/10.1038/s41597-022-01411-5
+de-identified VitalDB dataset.
 
 ## License
 
