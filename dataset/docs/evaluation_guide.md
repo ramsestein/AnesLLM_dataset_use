@@ -4,7 +4,7 @@ This guide explains how to load the dataset and evaluate a model against it.
 
 ## 1. Loading the data
 
-The data lives in `dataset/{dev,train,test}/case<caseid>.jsonl`: one JSON object per line, one
+The data lives in `dataset/data/{dev,train,test}/case<caseid>.jsonl`: one JSON object per line, one
 line per decision window, all windows of a case in the same file.
 
 ```python
@@ -12,7 +12,7 @@ import json
 from pathlib import Path
 
 def load(split):
-    for f in sorted((Path("dataset") / split).glob("case*.jsonl")):
+    for f in sorted((Path("dataset/data") / split).glob("case*.jsonl")):
         for line in open(f, encoding="utf-8"):
             yield json.loads(line)
 
@@ -41,8 +41,8 @@ for rec in load("test"):
 - **`output.result_real`** is the ground-truth action (no ratio) — the action the clinician
   actually performed.
 - **`output.result_1`** and **`output.result_aux`** are the primary and alternative consensus
-  actions, derived from the most frequent clinician actions in similar cases (unsupervised
-  clustering); `ratio` is the supporting proportion.
+  actions: top-2 of a LightGBM model trained to predict the clinician's action (case-grouped
+  out-of-fold predictions); `ratio` is the model probability.
 
 ## 3. Action vocabulary
 
@@ -75,7 +75,7 @@ also provides the alternative action and supports external-validity evaluation (
 
 ## 5. Difficulty
 
-Each case has a difficulty label in `dataset/split_manifest.csv`
+Each case has a difficulty label in `dataset/reports/split_manifest.csv`
 (`case_id, difficulty, split, n_windows, null_score`):
 
 - `easy` — high consensus confidence (≥ p75 of the per-case confidence),

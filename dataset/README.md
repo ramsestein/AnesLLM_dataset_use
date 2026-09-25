@@ -3,8 +3,8 @@
 AnesLLM is a clinical decision-support benchmark for **anesthesia**. It contains intraoperative
 *decision windows* derived from [VitalDB](https://vitaldb.net) (Seoul National University
 Hospital): everything observable before a decision, plus the action the clinician actually took
-and two consensus alternatives derived from clinician actions in similar cases
-(unsupervised clustering).
+and two consensus alternatives estimated from the actions of all clinicians in the cohort
+(supervised LightGBM, case-grouped out-of-fold predictions).
 
 - **3,168 cases** · **84,813 decision windows**
 - Splits: `dev` (25) · `train` (2,994) · `test` (149)
@@ -15,9 +15,8 @@ and two consensus alternatives derived from clinician actions in similar cases
 
 ```
 dataset/
-├── dev/  train/  test/        # case<caseid>.jsonl — one JSON per window (line-delimited)
-├── split_manifest.csv         # case_id, difficulty, split, n_windows, null_score
-└── reports/                   # audits, data dictionary, strategy tables
+├── data/{dev,train,test}/     # case<caseid>.jsonl — one JSON per window (distributed on Zenodo/PhysioNet)
+└── reports/                   # split_manifest.csv, audits, data dictionary, strategy tables
 
 docs/
 ├── dataset_overview.md        # what the dataset is (start here)
@@ -25,7 +24,6 @@ docs/
 ├── audit_report.md            # verification results
 └── evaluation_guide.md        # how to load and evaluate
 
-audit/                         # scripts that regenerate the audits
 ```
 
 ## Documentation
@@ -42,18 +40,18 @@ audit/                         # scripts that regenerate the audits
 
 - **Record format**: one JSON object per line, `{ window_id, case_id, input, output }`.
 - **`input`**: 280 pre-decision fields (patient, labs, vitals, drug history, events, trends).
-- **`output`**: `result_1` (primary consensus action + supporting ratio), `result_aux`
+- **`output`**: `result_1` (primary consensus action + model probability), `result_aux`
   (alternative consensus action + ratio), `result_real` (action the clinician actually took).
 - **Difficulty**: each case is `easy` / `medium` / `hard` (see `split_manifest.csv`).
-- **Privacy note**: two direct identifiers (`pt_caseid`, `pt_subjectid`) remain in the patient
-  fields; remove them before any public release.
+- **Privacy note**: direct identifiers (`pt_caseid`, `pt_subjectid`) are removed in the released
+  dataset.
 
 ## Loading example
 
 ```python
 import json
 
-with open("dataset/test/case14.jsonl", encoding="utf-8") as f:
+with open("dataset/data/test/case14.jsonl", encoding="utf-8") as f:
     for line in f:
         record = json.loads(line)
         x = record["input"]            # 280 features

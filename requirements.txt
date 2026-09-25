@@ -1,0 +1,5 @@
+numpy
+matplotlib
+# Optional, only to re-run the laya classifier:
+laya
+torch

@@ -5,8 +5,8 @@
 AnesLLM is a clinical decision-support benchmark for **anesthesia**. Each record is a
 *decision window* extracted from real surgical cases: all the information available to the
 anesthesiologist **before** a decision, paired with (a) the action the clinician actually took
-and (b) two consensus alternatives derived from clinician actions in similar cases
-(unsupervised clustering).
+and (b) two consensus alternatives estimated from the actions of all clinicians in the cohort
+(supervised LightGBM, case-grouped out-of-fold predictions).
 
 The dataset is derived from [VitalDB](https://vitaldb.net), a public open dataset of
 high-resolution intraoperative biosignals from **Seoul National University Hospital** (6,388
@@ -50,8 +50,8 @@ One JSON line per decision window, in per-case files `case<caseid>.jsonl`:
   - history of previous actions and clinical events,
   - monitoring flags, coverage counters and trend features.
 - **`output`** — the three results:
-  - `result_1` — primary consensus action + supporting ratio,
-  - `result_aux` — alternative consensus action + supporting ratio,
+  - `result_1` — primary consensus action + model probability,
+  - `result_aux` — alternative consensus action + model probability,
   - `result_real` — the action the clinician actually took (ground truth, no ratio).
 
 ## Action vocabulary
@@ -94,9 +94,9 @@ dataset/
   end of the window.
 - **Ground truth** (`result_real`): the drug-rate change the clinician actually performed,
   mapped to the 5 canonical classes (`no_action` when nothing changed).
-- **Consensus alternatives** (`result_1` / `result_aux`): the two most frequent actions taken
-  by clinicians in similar cases, found by unsupervised clustering of the windows; `ratio` is
-  the proportion of similar cases supporting each action. No LLM is involved in deriving them.
+- **Consensus alternatives** (`result_1` / `result_aux`): top-2 actions of a LightGBM model
+  trained to predict the clinician's action (case-grouped out-of-fold); `ratio` is the model
+  probability. No LLM is involved in deriving them.
 - **Anonymization note**: VitalDB is de-identified at source, but two direct identifiers
   (`pt_caseid`, `pt_subjectid`) are still present in the patient fields and should be removed
   before any public release.

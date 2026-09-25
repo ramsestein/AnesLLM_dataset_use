@@ -17,4 +17,3 @@ results/logs/
 
 # Supp de colocaciones temporales
 src/plot_offsets.py
-src/verify_reasoning.py
