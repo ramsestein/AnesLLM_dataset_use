@@ -39,19 +39,21 @@ DIRECTION = {
 def sanitize(name):
     return re.sub(r'[<>:"/\\|?*]', "_", name)
 
-# temperatura / razonamiento usado por modelo (0 = sin razonamiento; default = razona)
+# razonamiento por modelo (verificado empíricamente con src/verify_reasoning.py:
+# ~10 llamadas por modelo, tokens de thinking devueltos por cada API).
+# Claude usa thinking desactivado en el evaluador; medgemma es generación simple.
 TEMPERATURE = {
-    "deepseek-flash": "0 (no reasoning)",
-    "deepseek-v4-pro": "0 (no reasoning)",
-    "gemini-3.1-flash-lite": "0 (no reasoning)",
-    "gemini-3.1-pro-preview": "0 (no reasoning)",
-    "gpt-4o": "0 (no reasoning)",
-    "gpt-5.4-mini": "0 (no reasoning)",
-    "gpt-5.4": "0 (no reasoning)",
-    "gpt-6-sol": "default (reasoning)",
-    "claude-haiku-4-5-20251001": "0 (no reasoning)",
-    "claude-opus-4-8": "default (thinking off)",
-    "medgemma:27b": "0 (no reasoning)",
+    "deepseek-flash": "reasoning (~467 tok)",
+    "deepseek-v4-pro": "reasoning (~358 tok)",
+    "gemini-3.1-flash-lite": "no reasoning",
+    "gemini-3.1-pro-preview": "reasoning (~224 tok)",
+    "gpt-4o": "no reasoning",
+    "gpt-5.4-mini": "no reasoning",
+    "gpt-5.4": "no reasoning",
+    "gpt-6-sol": "reasoning (~34 tok)",
+    "claude-haiku-4-5-20251001": "no reasoning (thinking off)",
+    "claude-opus-4-8": "no reasoning (thinking off)",
+    "medgemma:27b": "no reasoning",
     "laya": "N/A (classifier)",
     "jev": "N/A (classifier)",
     "rules": "N/A (deterministic)",
@@ -811,13 +813,13 @@ def main():
 
     # --- reporte Markdown
     write_report(acc, cf, clf, tax, rf, diff, boot, cons, agree,
-                 full_models, models, hflag, reviewers)
+                 full_models, models, hflag, reviewers, human_safety)
     make_plots(acc, cf, hflag, human_safety, full_models)
     print("análisis completo en", OUT)
 
 
 def write_report(acc, cf, clf, tax, rf, diff, boot, cons, agree,
-                 full_models, all_models, hflag, reviewers):
+                 full_models, all_models, hflag, reviewers, human_safety):
     lines = []
     lines.append(f"# AnesLLM Benchmark Analysis ({len(full_models)} models)")
     lines.append("")
@@ -835,13 +837,13 @@ def write_report(acc, cf, clf, tax, rf, diff, boot, cons, agree,
 
     lines.append("## 2. Ceiling and floors")
     lines.append("")
-    lines.append("| reference | strict accuracy |")
-    lines.append("|---|---|")
-    lines.append(f"| human ceiling (consensus vs result_1) | {cf['human_consensus']:.3f} |")
-    lines.append(f"| human ceiling (plausible {{result_1, result_aux}}) | {cf['human_plausible']:.3f} |")
-    lines.append(f"| floor: always no_action | {cf['floor_always_no_action']:.3f} |")
-    lines.append(f"| floor: previous action | {cf['floor_previous_action']:.3f} |")
-    lines.append(f"| floor: random expected | {cf['floor_random_expected']:.3f} |")
+    lines.append("| reference | metric | value |")
+    lines.append("|---|---|---|")
+    lines.append(f"| human reference zone (full information, 5 options) | consensus vs result_1 | {cf['human_consensus']:.3f} |")
+    lines.append(f"| human reference zone (full information, 5 options) | plausible {{result_1, result_aux}} | {cf['human_plausible']:.3f} |")
+    lines.append(f"| floor: always no_action | strict | {cf['floor_always_no_action']:.3f} |")
+    lines.append(f"| floor: previous action | strict | {cf['floor_previous_action']:.3f} |")
+    lines.append(f"| floor: random expected | strict | {cf['floor_random_expected']:.3f} |")
     lines.append("")
 
     lines.append("## 3. Classification quality")
@@ -873,6 +875,13 @@ def write_report(acc, cf, clf, tax, rf, diff, boot, cons, agree,
     lines.append("|---|---|")
     for m in sorted(full_models, key=lambda m: hflag[m]):
         lines.append(f"| {disp(m)} | {hflag[m]:.3f} |")
+    lines.append(f"| **human (result_real)** | {1 - human_safety:.3f} |")
+    lines.append("")
+    lines.append("The clinician's own actions carry red flags at "
+                 f"{1 - human_safety:.3f}: GPT-6 Sol, DeepSeek V4.1 Flash, "
+                 "DeepSeek V4 Pro and Gemini 3.1 Pro generate fewer red flags than "
+                 "the anesthesiologist. This is expected: the clinician breaks the "
+                 "rules using information not present in the data, not by mistake.")
     lines.append("")
 
     lines.append("## 6. Reliability (case-clustered bootstrap, 95% CI)")
@@ -913,15 +922,24 @@ def write_report(acc, cf, clf, tax, rf, diff, boot, cons, agree,
         lines.append("")
         lines.append("| model | strict | consensus | plausible | harmful rate |")
         lines.append("|---|---|---|---|---|")
-        for r in load_csv(sub_csv):
+        rows = load_csv(sub_csv)
+        model_rows = [r for r in rows if not r["model"].startswith("floor_")]
+        floor_rows = [r for r in rows if r["model"].startswith("floor_")]
+        model_rows.sort(key=lambda r: -float(r["consensus"] or 0))
+        for r in model_rows + floor_rows:
             name = r["model"]
-            cons_v = r["consensus"] if r["consensus"] != "" else "\u2014"
-            plau_v = r["plausibility"] if r["plausibility"] != "" else "\u2014"
             if name in FLOOR_NAMES:
                 name = f"*{FLOOR_NAMES[name]}*"
+                cons_v = "\u2014"
+                plau_v = "\u2014"
+                hv = r.get("harmful_rate", "")
+                harm_v = f"{float(hv):.3f}" if hv not in ("", None) else "\u2014"
             else:
                 name = disp(name)
-            lines.append(f"| {name} | {r['strict']} | {cons_v} | {plau_v} | {r['harmful_rate']} |")
+                cons_v = f"{float(r['consensus']):.3f}"
+                plau_v = f"{float(r['plausibility']):.3f}"
+                harm_v = f"{float(r['harmful_rate']):.3f}"
+            lines.append(f"| {name} | {float(r['strict']):.3f} | {cons_v} | {plau_v} | {harm_v} |")
         lines.append("")
     else:
         lines.append("Not available: run `src/analyze_noopioid.py` for the 3-option version.")
@@ -943,22 +961,35 @@ def write_report(acc, cf, clf, tax, rf, diff, boot, cons, agree,
         lines.append("")
     ap = reviewers["appropriateness"]
     if ap:
-        lines.append("### Appropriateness by unit (majority approval)")
+        full_units = [r for r in ap if r.get("kind") != "model"]
+        model_units = [r for r in ap if r.get("kind") == "model"]
+        # quitar deterministas de las filas model (ya solo evalúan el subgrupo)
+        model_units = [r for r in model_units if r["unit"] not in DETERMINIST]
+        lines.append("### Appropriateness by unit (majority approval, 298 review windows)")
         lines.append("")
         lines.append("| unit | kind | n_windows | majority |")
         lines.append("|---|---|---|---|")
-        for r in ap:
+        for r in full_units:
             lines.append(f"| {r['unit']} | {r['kind']} | {r['n_windows']} | "
                          f"{float(r['majority']):.3f} |")
         lines.append("")
+        if model_units:
+            lines.append("### Model-level appropriateness (preliminary, 13 review windows)")
+            lines.append("")
+            lines.append("| model | n | majority |")
+            lines.append("|---|---|---|")
+            for r in model_units:
+                lines.append(f"| {disp(r['unit'])} | {r['n_windows']} | "
+                             f"{float(r['majority']):.3f} |")
+            lines.append("")
 
-    # 11. Nivel de razonamiento por modelo
-    lines.append("## 11. Reasoning / temperature by model")
+    # 11. Nivel de razonamiento por modelo (verificado empíricamente)
+    lines.append("## 11. Reasoning by model (verified with src/verify_reasoning.py)")
     lines.append("")
-    lines.append("| model | temperature / reasoning |")
+    lines.append("| model | reasoning |")
     lines.append("|---|---|")
     for m in sorted(all_models):
-        lines.append(f"| {disp(m)} | {TEMPERATURE.get(m, '0 (no reasoning)')} |")
+        lines.append(f"| {disp(m)} | {TEMPERATURE.get(m, 'no reasoning')} |")
     lines.append("")
 
     (OUT / "report.md").write_text("\n".join(lines), encoding="utf-8")

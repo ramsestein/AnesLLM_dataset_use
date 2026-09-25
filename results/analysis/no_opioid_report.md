@@ -1,7 +1,7 @@
 # AnesLLM No-opioid Subgroup Analysis (3-option prompt)
 
 - Windows: **555**
-- Human ceiling (approx general): accuracy 0.82 · safety 0.968
+- Human reference zone (full information, 5 options): accuracy 0.82 · safety 0.968
 - Class distribution: {'reduce_hypnotic': 131, 'no_action': 357, 'increase_hypnotic': 67}
 
 ## 1. Accuracy
@@ -26,8 +26,8 @@
 | gpt-4o | 0.276 | 0.146 | 0.762 | 0.095 |
 | laya | 0.175 | 0.135 | 0.357 | 0.416 |
 | *always no_action (floor)* | 0.643 | — | — | 0.000 |
-| *previous action (floor)* | 0.560 | — | — | 0.000 |
-| *random expected (floor)* | 0.484 | — | — | 0.000 |
+| *previous action (floor)* | 0.560 | — | — | — |
+| *random expected (floor)* | 0.484 | — | — | — |
 
 ## 2. Red flags (harmful action rate)
 

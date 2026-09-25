@@ -236,7 +236,7 @@ def write_report(nop, hflag, models, floors, ds):
     lines.append("# AnesLLM No-opioid Subgroup Analysis (3-option prompt)")
     lines.append("")
     lines.append(f"- Windows: **{nop['n']}**")
-    lines.append(f"- Human ceiling (approx general): accuracy {HUMAN_ACC_APPROX:.2f} · "
+    lines.append(f"- Human reference zone (full information, 5 options): accuracy {HUMAN_ACC_APPROX:.2f} · "
                  f"safety {HUMAN_SAFETY_APPROX:.3f}")
     lines.append(f"- Class distribution: {nop['class_distribution']}")
     lines.append("")
@@ -249,8 +249,8 @@ def write_report(nop, hflag, models, floors, ds):
         lines.append(f"| {analyze.disp(m)} | {v['strict']:.3f} | {v['consensus']:.3f} | "
                      f"{v['plausibility']:.3f} | {hflag[m]:.3f} |")
     lines.append(f"| *always no_action (floor)* | {floors['floor_always_no_action']:.3f} | \u2014 | \u2014 | 0.000 |")
-    lines.append(f"| *previous action (floor)* | {floors['floor_previous_action']:.3f} | \u2014 | \u2014 | 0.000 |")
-    lines.append(f"| *random expected (floor)* | {floors['floor_random_expected']:.3f} | \u2014 | \u2014 | 0.000 |")
+    lines.append(f"| *previous action (floor)* | {floors['floor_previous_action']:.3f} | \u2014 | \u2014 | \u2014 |")
+    lines.append(f"| *random expected (floor)* | {floors['floor_random_expected']:.3f} | \u2014 | \u2014 | \u2014 |")
     lines.append("")
     lines.append("## 2. Red flags (harmful action rate)")
     lines.append("")
@@ -297,10 +297,10 @@ def main():
          "consensus": "", "plausibility": "", "harmful_rate": 0.0},
         {"model": "floor_previous_action",
          "strict": round(floors["floor_previous_action"], 4),
-         "consensus": "", "plausibility": "", "harmful_rate": 0.0},
+         "consensus": "", "plausibility": "", "harmful_rate": ""},
         {"model": "floor_random_expected",
          "strict": round(floors["floor_random_expected"], 4),
-         "consensus": "", "plausibility": "", "harmful_rate": 0.0},
+         "consensus": "", "plausibility": "", "harmful_rate": ""},
     ]
     write_csv(OUT / "no_opioid_subgroup.csv", rows,
               ["model", "strict", "consensus", "plausibility", "harmful_rate"])

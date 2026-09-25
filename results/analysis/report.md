@@ -22,13 +22,13 @@
 
 ## 2. Ceiling and floors
 
-| reference | strict accuracy |
-|---|---|
-| human ceiling (consensus vs result_1) | 0.570 |
-| human ceiling (plausible {result_1, result_aux}) | 0.816 |
-| floor: always no_action | 0.271 |
-| floor: previous action | 0.325 |
-| floor: random expected | 0.230 |
+| reference | metric | value |
+|---|---|---|
+| human reference zone (full information, 5 options) | consensus vs result_1 | 0.570 |
+| human reference zone (full information, 5 options) | plausible {result_1, result_aux} | 0.816 |
+| floor: always no_action | strict | 0.271 |
+| floor: previous action | strict | 0.325 |
+| floor: random expected | strict | 0.230 |
 
 ## 3. Classification quality
 
@@ -83,6 +83,9 @@
 | gpt-5.4-mini | 0.112 |
 | medgemma:27b | 0.130 |
 | gemini-3.1-flash-lite | 0.162 |
+| **human (result_real)** | 0.032 |
+
+The clinician's own actions carry red flags at 0.032: GPT-6 Sol, DeepSeek V4.1 Flash, DeepSeek V4 Pro and Gemini 3.1 Pro generate fewer red flags than the anesthesiologist. This is expected: the clinician breaks the rules using information not present in the data, not by mistake.
 
 ## 6. Reliability (case-clustered bootstrap, 95% CI)
 
@@ -132,26 +135,26 @@ Dedicated 3-option evaluation (see `no_opioid_report.md`).
 
 | model | strict | consensus | plausible | harmful rate |
 |---|---|---|---|---|
-| deepseek-4.1-flash | 0.5063 | 0.5027 | 0.9622 | 0.0018 |
-| deepseek-v4-pro | 0.427 | 0.3676 | 0.9459 | 0.009 |
-| gemini-3.1-flash-lite | 0.2919 | 0.1946 | 0.7405 | 0.164 |
-| gemini-3.1-pro-preview | 0.4523 | 0.4108 | 0.9477 | 0.0072 |
-| gpt-4o | 0.2757 | 0.1459 | 0.7622 | 0.0955 |
-| gpt-5.4-mini | 0.4306 | 0.4793 | 0.7604 | 0.1441 |
-| gpt-5.4 | 0.5045 | 0.5405 | 0.8937 | 0.0559 |
-| gpt-6-sol | 0.4667 | 0.4468 | 0.9712 | 0.0018 |
-| haiku-4.5 | 0.4649 | 0.4991 | 0.818 | 0.0775 |
-| opus-4.8 | 0.4306 | 0.4162 | 0.8234 | 0.0903 |
-| medgemma:27b | 0.3369 | 0.2901 | 0.6775 | 0.2 |
-| laya | 0.1748 | 0.1351 | 0.3568 | 0.4162 |
-| jev | 0.4486 | 0.4883 | 0.818 | 0.0919 |
-| rules | 0.4919 | 0.5153 | 0.9676 | 0.0 |
-| pid | 0.3712 | 0.3117 | 0.9063 | 0.0162 |
-| clads | 0.4486 | 0.427 | 0.9568 | 0.0 |
-| fuzzy | 0.436 | 0.427 | 0.9622 | 0.0 |
-| *always no_action (floor)* | 0.6432 | — | — | 0.0 |
-| *previous action (floor)* | 0.5604 | — | — | 0.0 |
-| *random expected (floor)* | 0.484 | — | — | 0.0 |
+| gpt-5.4 | 0.504 | 0.540 | 0.894 | 0.056 |
+| rules | 0.492 | 0.515 | 0.968 | 0.000 |
+| deepseek-4.1-flash | 0.506 | 0.503 | 0.962 | 0.002 |
+| haiku-4.5 | 0.465 | 0.499 | 0.818 | 0.077 |
+| jev | 0.449 | 0.488 | 0.818 | 0.092 |
+| gpt-5.4-mini | 0.431 | 0.479 | 0.760 | 0.144 |
+| gpt-6-sol | 0.467 | 0.447 | 0.971 | 0.002 |
+| clads | 0.449 | 0.427 | 0.957 | 0.000 |
+| fuzzy | 0.436 | 0.427 | 0.962 | 0.000 |
+| opus-4.8 | 0.431 | 0.416 | 0.823 | 0.090 |
+| gemini-3.1-pro-preview | 0.452 | 0.411 | 0.948 | 0.007 |
+| deepseek-v4-pro | 0.427 | 0.368 | 0.946 | 0.009 |
+| pid | 0.371 | 0.312 | 0.906 | 0.016 |
+| medgemma:27b | 0.337 | 0.290 | 0.677 | 0.200 |
+| gemini-3.1-flash-lite | 0.292 | 0.195 | 0.741 | 0.164 |
+| gpt-4o | 0.276 | 0.146 | 0.762 | 0.096 |
+| laya | 0.175 | 0.135 | 0.357 | 0.416 |
+| *always no_action (floor)* | 0.643 | — | — | 0.000 |
+| *previous action (floor)* | 0.560 | — | — | — |
+| *random expected (floor)* | 0.484 | — | — | — |
 
 ## 10. Human reviewers
 
@@ -167,7 +170,7 @@ Dedicated 3-option evaluation (see `no_opioid_report.md`).
 | cohen_kappa | Sandro vs Yihao | 0.467 |
 | fleiss_kappa | all raters | 0.515 |
 
-### Appropriateness by unit (majority approval)
+### Appropriateness by unit (majority approval, 298 review windows)
 
 | unit | kind | n_windows | majority |
 |---|---|---|---|
@@ -181,41 +184,42 @@ Dedicated 3-option evaluation (see `no_opioid_report.md`).
 | rule | policy | 298 | 0.762 |
 | result_1 | benchmark | 298 | 0.266 |
 | result_aux | benchmark | 298 | 0.545 |
-| clads | model | 13 | 0.615 |
-| claude-haiku-4-5-20251001 | model | 13 | 0.273 |
-| claude-opus-4-8 | model | 13 | 0.545 |
-| deepseek-v4.1-flash | model | 13 | 0.625 |
-| deepseek-v4-pro | model | 13 | 0.583 |
-| fuzzy | model | 13 | 0.615 |
-| gemini-3.1-flash-lite | model | 13 | 0.545 |
-| gemini-3.1-pro-preview | model | 13 | 0.583 |
-| gpt-4o | model | 13 | 0.545 |
-| gpt-5.4 | model | 13 | 0.462 |
-| gpt-5.4-mini | model | 13 | 0.600 |
-| gpt-6-sol | model | 13 | 0.667 |
-| jev | model | 13 | 0.583 |
-| medgemma:27b | model | 13 | 0.200 |
-| pid | model | 13 | 0.364 |
-| rules | model | 13 | 0.769 |
 
-## 11. Reasoning / temperature by model
+### Model-level appropriateness (preliminary, 13 review windows)
 
-| model | temperature / reasoning |
+| model | n | majority |
+|---|---|---|
+| haiku-4.5 | 13 | 0.273 |
+| opus-4.8 | 13 | 0.545 |
+| deepseek-v4.1-flash | 13 | 0.625 |
+| deepseek-v4-pro | 13 | 0.583 |
+| gemini-3.1-flash-lite | 13 | 0.545 |
+| gemini-3.1-pro-preview | 13 | 0.583 |
+| gpt-4o | 13 | 0.545 |
+| gpt-5.4 | 13 | 0.462 |
+| gpt-5.4-mini | 13 | 0.600 |
+| gpt-6-sol | 13 | 0.667 |
+| jev | 13 | 0.583 |
+| medgemma:27b | 13 | 0.200 |
+
+## 11. Reasoning by model (verified with src/verify_reasoning.py)
+
+| model | reasoning |
 |---|---|
 | clads | N/A (deterministic) |
-| haiku-4.5 | 0 (no reasoning) |
-| opus-4.8 | default (thinking off) |
-| deepseek-4.1-flash | 0 (no reasoning) |
-| deepseek-v4-pro | 0 (no reasoning) |
+| haiku-4.5 | no reasoning (thinking off) |
+| opus-4.8 | no reasoning (thinking off) |
+| deepseek-4.1-flash | reasoning (~467 tok) |
+| deepseek-v4-pro | reasoning (~358 tok) |
 | fuzzy | N/A (deterministic) |
-| gemini-3.1-flash-lite | 0 (no reasoning) |
-| gemini-3.1-pro-preview | 0 (no reasoning) |
-| gpt-4o | 0 (no reasoning) |
-| gpt-5.4 | 0 (no reasoning) |
-| gpt-5.4-mini | 0 (no reasoning) |
-| gpt-6-sol | default (reasoning) |
+| gemini-3.1-flash-lite | no reasoning |
+| gemini-3.1-pro-preview | reasoning (~224 tok) |
+| gpt-4o | no reasoning |
+| gpt-5.4 | no reasoning |
+| gpt-5.4-mini | no reasoning |
+| gpt-6-sol | reasoning (~34 tok) |
 | jev | N/A (classifier) |
 | laya | N/A (classifier) |
-| medgemma:27b | 0 (no reasoning) |
+| medgemma:27b | no reasoning |
 | pid | N/A (deterministic) |
 | rules | N/A (deterministic) |
