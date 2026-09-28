@@ -1,0 +1,14 @@
+# src/verify_reasoning.py — verificación empírica de razonamiento (n=10 por modelo)
+# Generado: 2026-09-28
+
+model                          n  reasoning_ok  avg_reason  avg_total  conclusion
+------------------------------------------------------------------------------------------
+gpt-4o                        10            10         0.0       30.4  reasoning field present but 0 -> no reasoning
+gpt-5.4-mini                  10            10         0.0        4.0  reasoning field present but 0 -> no reasoning
+gpt-5.4                       10            10         0.0        4.0  reasoning field present but 0 -> no reasoning
+gpt-6-sol                     10            10        34.7       44.7  REASONS
+deepseek-flash                10            10       496.3      498.3  REASONS
+deepseek-v4-pro               10            10       383.8      385.8  REASONS
+gemini-3.1-flash-lite         10             0           —        1.0  no reasoning field (does not reason)
+gemini-3.1-pro-preview        10            10       194.8        1.0  REASONS
+claude-opus-5-5               10            10        80.7       83.7  REASONS
