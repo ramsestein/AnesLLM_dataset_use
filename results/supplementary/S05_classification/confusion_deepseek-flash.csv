@@ -1,0 +1,6 @@
+﻿actual,increase_hypnotic,reduce_hypnotic,increase_opioid,reduce_opioid,no_action
+increase_hypnotic,89,21,47,40,91
+reduce_hypnotic,17,225,54,67,88
+increase_opioid,113,201,207,86,215
+reduce_opioid,100,285,133,177,239
+no_action,98,284,160,103,284

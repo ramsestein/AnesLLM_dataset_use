@@ -1,0 +1,18 @@
+﻿model,provider,backend,temperature,reasoning_verified,n_windows_test,evaluation_dates
+gpt-4o,OpenAI,openai,0,no reasoning,3457,2026-09-24 to 2026-09-25
+gpt-5.4,OpenAI,openai,0,no reasoning,3457,2026-09-24 to 2026-09-25
+gpt-5.4-mini,OpenAI,openai,0,no reasoning,3457,2026-09-24 to 2026-09-25
+gpt-6-sol,OpenAI,openai,default (rejects 0),reasoning (~34 tok),3457,2026-09-24 to 2026-09-25
+deepseek-flash,DeepSeek,deepseek,0,reasoning (~467 tok),3457,2026-09-24 to 2026-09-25
+deepseek-v4-pro,DeepSeek,deepseek,0,reasoning (~358 tok),3457,2026-09-24 to 2026-09-25
+gemini-3.1-flash-lite,Google,gemini,0,no reasoning,3457,2026-09-24 to 2026-09-25
+gemini-3.1-pro-preview,Google,gemini,0,reasoning (~224 tok),3457,2026-09-24 to 2026-09-25
+claude-haiku-4-5-20251001,Anthropic,claude,0,no reasoning (thinking off),3457,2026-09-24 to 2026-09-25
+claude-opus-4-8,Anthropic,claude,default (rejects 0),no reasoning (thinking off),3457,2026-09-24 to 2026-09-25
+medgemma:27b,Ollama (local),ollama,0,no reasoning,3457,2026-09-24 to 2026-09-25
+laya,local (convaiinnovations/laya),laya,N/A,N/A (classifier),3457,2026-09-24 to 2026-09-25
+jev,JEV (thejevai.com),jev,N/A,N/A (classifier),3457,2026-09-24 to 2026-09-25
+rules,in-house,deterministic,N/A,N/A (deterministic),3457,2026-09-24 to 2026-09-25
+pid,in-house,deterministic,N/A,N/A (deterministic),3457,2026-09-24 to 2026-09-25
+clads,in-house,deterministic,N/A,N/A (deterministic),3457,2026-09-24 to 2026-09-25
+fuzzy,in-house,deterministic,N/A,N/A (deterministic),3457,2026-09-24 to 2026-09-25
