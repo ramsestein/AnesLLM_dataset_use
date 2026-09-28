@@ -114,14 +114,17 @@ Output: `audit/bad_cases.csv` (case, split, number of bad windows, reasons).
 
 ## 10. Privacy (k-anonymity)
 
-Evaluated at window level.
+Evaluated at window level (quasi-identifiers: sex, age, weight, height, BMI, ASA, with and
+without the current vitals HR/MAP/SpO2/BIS/EtCO2; quantitative values rounded to integers).
 
-- With **demographics only**, windows are grouped (k ≥ 3), but this is misleading: windows of
-  the same patient repeat the same profile.
-- Adding **vital signs** makes 75.3% of windows unique (**k = 1**): the concrete vitals
+- With **demographics only**, every window belongs to a group of **k >= 3** (min k = 3, median
+  k = 23), but this is misleading: windows of the same patient repeat the same profile.
+- Adding **vital signs** makes **99.6% of windows unique (k = 1)**: the concrete vitals
   re-identify the window.
 - Direct identifiers `pt_caseid` and `pt_subjectid` are present and must be removed before any
   public release.
+
+Output: `dataset/reports/k_anonymity.csv`.
 
 ## 11. Data dictionary
 

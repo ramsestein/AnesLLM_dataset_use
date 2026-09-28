@@ -62,7 +62,7 @@ Checklist adaptado de TRIPOD+AI / TRIPOD-LLM. Estado por ítem: **Sí** (reporta
 | 32 | Acuerdo entre modelos | Sí | `S07_consistency/model_agreement.csv` |
 | 33 | Comparaciones por pares (McNemar) | Sí | `S09_paired_mcnemar.csv` |
 | 34 | Incertidumbre (IC por bootstrap) | Sí | `results/analysis/bootstrap_ci.csv`, `no_opioid_subgroup_ci.csv` |
-| 35 | Validación externa con revisores independientes | Sí | `S08_external_review/` (3 anestesistas, 298 ventanas) |
+| 35 | Revisión clínica por 3 anestesistas (coautores, no independientes) | Sí | `S08_external_review/` (298 ventanas) |
 | 36 | Subgrupos (no-opioide) | Sí | `results/analysis/no_opioid_report.md` |
 
 ## F. Resultados
@@ -80,7 +80,7 @@ Checklist adaptado de TRIPOD+AI / TRIPOD-LLM. Estado por ítem: **Sí** (reporta
 | 40 | Limitaciones | Parcial | `dataset/docs/` y notas de `report.md` |
 | 41 | Implicaciones y uso previsto (soporte a la decisión, no autonomía) | Parcial | `README.md` |
 | 42 | Disponibilidad de código y datos | Parcial | código en `src/`; datos bajo licencia VitalDB |
-| 43 | Financiación / conflictos | — | No reportado |
-| 44 | Registro del estudio | — | No reportado |
+| 43 | Financiación / conflictos | Pendiente | Declarar por los autores |
+| 44 | Registro del estudio | Pendiente | Declarar si se registró (p. ej. OSF) |
 
-*Nota: los ítems marcados "—" o "Parcial" quedan pendientes de completar para la publicación.*
+*Nota: los ítems marcados "Pendiente" o "Parcial" quedan pendientes de completar para la publicación.*
