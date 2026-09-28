@@ -77,7 +77,8 @@ def model_name(folder):
 def test_rows(ds):
     rows = []
     for d in sorted(DATA_RESULTS.glob("*")):
-        if not d.is_dir() or d.name == "logs" or d.name.endswith("_repeats3"):
+        if (not d.is_dir() or d.name == "logs"
+                or d.name.endswith("_repeats3") or d.name.endswith("_noopioid")):
             continue
         f = d / "test.jsonl"
         if not f.exists():

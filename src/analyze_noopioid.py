@@ -2,7 +2,7 @@
 """Análisis y reporte del subgrupo no-opioide con el prompt de 3 opciones.
 
 Consolida las evaluaciones dedicadas (results/data_results/<modelo>_noopioid/,
-13 modelos: 11 LLM + laya + jev) junto con los baselines deterministas
+14 modelos: 12 LLM + laya + jev) junto con los baselines deterministas
 (rules, pid, clads, fuzzy, que ya evalúan solo el subgrupo).
 
 Genera:
@@ -47,6 +47,7 @@ NO_OPIOID_DIRS = [
     "gpt-6-sol_noopioid",
     "claude-haiku-4-5-20251001_noopioid",
     "claude-opus-4-8_noopioid",
+    "claude-opus-5-5_noopioid",
     "medgemma_27b_noopioid",
     "laya_noopioid",
     "jev_noopioid",
@@ -68,6 +69,7 @@ SCATTER_OFFSETS = {
     "gpt-5.4": (16, 4),
     "haiku-4.5": (0, 14),
     "opus-4.8": (0, -14),
+    "opus-5.5": (0, 14),
     "gpt-4o": (0, -14),
     "gpt-5.4-mini": (16, 0),
     "medgemma:27b": (0, -14),

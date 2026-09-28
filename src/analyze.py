@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
-"""Análisis completo del benchmark AnesLLM (17 modelos: 11 LLM + 2 clasificación + 4 deterministas).
+"""Análisis completo del benchmark AnesLLM (18 modelos: 12 LLM + 2 clasificación + 4 deterministas).
 
 Lee results/test_all.csv y results/consistency_all.csv (ya filtrados de vasopressor)
 y el dataset (dataset/data/test/*.jsonl) para red flags y suelo de "acción previa".
 
 Genera results/analysis/: metrics_summary.csv, ceilings_floors.csv,
 error_taxonomy.csv, red_flags.csv, difficulty.csv, consistency_quadrants.csv,
-paired_mcnemar.csv, model_agreement.csv, confusion_<model>.csv y report.md.
+paired_mcnemar.csv, paired_mcnemar_case.csv, model_agreement.csv,
+confusion_<model>.csv y report.md.
 """
 import csv
 import json
@@ -53,6 +54,7 @@ TEMPERATURE = {
     "gpt-6-sol": "reasoning (~34 tok)",
     "claude-haiku-4-5-20251001": "no reasoning (thinking off)",
     "claude-opus-4-8": "no reasoning (thinking off)",
+    "claude-opus-5-5": "reasoning (~70 tok)",
     "medgemma:27b": "no reasoning",
     "laya": "N/A (classifier)",
     "jev": "N/A (classifier)",
@@ -571,6 +573,49 @@ def paired_mcnemar(models, pred, gt):
     return matrix
 
 
+def paired_mcnemar_case(models, pred, gt, case_windows, n_perm=2000, seed=42):
+    """McNemar ajustado por caso (permutación de signos a nivel de caso).
+
+    Para cada par (A, B) se calcula, por caso, la diferencia neta de ventanas
+    discordantes d_c = b_c - c_c (A acierta y B falla, menos B acierta y A falla).
+    La hipótesis nula de equivalencia se evalúa remuestreando los casos con signos
+    aleatorios ±1, lo que preserva la correlación intra-caso. Devuelve un p-valor
+    bilateral por permutación (con corrección +1).
+    """
+    import numpy as np
+    rng = np.random.default_rng(seed)
+    wids = list(gt.keys())
+    correct = {m: {w: (pred[m].get(w) == gt[w]["result_real"]) for w in wids}
+               for m in models}
+    matrix = {}
+    for a in models:
+        for b in models:
+            if a >= b:
+                continue
+            d = []
+            for cid, ws in case_windows.items():
+                bc = cc = 0
+                for w in ws:
+                    ca = correct[a].get(w)
+                    cb = correct[b].get(w)
+                    if ca and not cb:
+                        bc += 1
+                    elif cb and not ca:
+                        cc += 1
+                if bc != cc:
+                    d.append(bc - cc)
+            if not d:
+                matrix[(a, b)] = 1.0
+                continue
+            d = np.asarray(d, dtype=float)
+            d_obs = abs(d.sum())
+            signs = rng.integers(0, 2, size=(n_perm, len(d))) * 2 - 1
+            dist = np.abs(signs @ d)
+            p = (np.sum(dist >= d_obs - 1e-12) + 1) / (n_perm + 1)
+            matrix[(a, b)] = min(1.0, float(p))
+    return matrix
+
+
 def bootstrap_accuracy(models, pred, gt, case_windows):
     """IC95 bootstrap por caso para estricta, consenso y plausibilidad."""
     out = {}
@@ -747,6 +792,11 @@ def main():
               [{"model_a": a, "model_b": b, "mcnemar_p": round(p, 6)}
                for (a, b), p in sorted(mcn.items())],
               ["model_a", "model_b", "mcnemar_p"])
+    mcn_case = paired_mcnemar_case(full_models, pred, gt, case_windows)
+    write_csv(OUT / "paired_mcnemar_case.csv",
+              [{"model_a": a, "model_b": b, "mcnemar_case_p": round(p, 6)}
+               for (a, b), p in sorted(mcn_case.items())],
+              ["model_a", "model_b", "mcnemar_case_p"])
     boot = bootstrap_accuracy(full_models, pred, gt, case_windows)
     write_csv(OUT / "bootstrap_ci.csv",
               [{"model": m,
@@ -878,10 +928,11 @@ def write_report(acc, cf, clf, tax, rf, diff, boot, cons, agree,
     lines.append(f"| **human (result_real)** | {1 - human_safety:.3f} |")
     lines.append("")
     lines.append("The clinician's own actions carry red flags at "
-                 f"{1 - human_safety:.3f}: GPT-6 Sol, DeepSeek V4.1 Flash, "
-                 "DeepSeek V4 Pro and Gemini 3.1 Pro generate fewer red flags than "
-                 "the anesthesiologist. This is expected: the clinician breaks the "
-                 "rules using information not present in the data, not by mistake.")
+                 f"{1 - human_safety:.3f}: Claude Opus 5.5, GPT-6 Sol, "
+                 "DeepSeek V4.1 Flash, DeepSeek V4 Pro and Gemini 3.1 Pro generate "
+                 "fewer red flags than the anesthesiologist. This is expected: the "
+                 "clinician breaks the rules using information not present in the "
+                 "data, not by mistake.")
     lines.append("")
 
     lines.append("## 6. Reliability (case-clustered bootstrap, 95% CI)")
@@ -1002,6 +1053,7 @@ DISPLAY = {
     "deepseek-flash": "deepseek-4.1-flash",
     "claude-haiku-4-5-20251001": "haiku-4.5",
     "claude-opus-4-8": "opus-4.8",
+    "claude-opus-5-5": "opus-5.5",
 }
 CAT_COLOR = {
     "human": "#2ca02c",
@@ -1098,6 +1150,7 @@ def make_subgroup_plots(nop, hflag, human_safety, models):
         "haiku-4.5": (0, 14),
         "jev": (0, 14),
         "opus-4.8": (0, -14),
+        "opus-5.5": (0, 14),
         "gpt-4o": (0, -14),
         "gpt-5.4-mini": (0, -14),
         "medgemma:27b": (0, -14),
@@ -1212,6 +1265,7 @@ def make_plots(acc, cf, hflag, human_safety, models):
         "laya": (14, 6),
         "haiku-4.5": (0, 16),
         "opus-4.8": (18, 8),
+        "opus-5.5": (-18, -8),
         "jev": (0, -16),
         "gpt-4o": (0, -14),
         "gpt-5.4-mini": (16, 0),

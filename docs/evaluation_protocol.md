@@ -59,6 +59,7 @@ empirically by reading the reasoning-token counters returned by each API
 | gpt-6-sol | OpenAI | default (0 not accepted) | yes (~34 tokens) |
 | claude-haiku-4-5-20251001 | Anthropic | 0 | no (thinking disabled) |
 | claude-opus-4-8 | Anthropic | default (0 not accepted) | no (thinking disabled) |
+| claude-opus-5-5 | Anthropic | not accepted (deprecated) | yes (~70 tokens, adaptive thinking) |
 | gemini-3.1-pro-preview | Gemini | 0 | yes (~224 tokens) |
 | gemini-3.1-flash-lite | Gemini | 0 | no |
 | deepseek-v4-pro | DeepSeek | 0 | yes (~358 tokens) |

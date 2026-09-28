@@ -38,7 +38,7 @@ analysis (red flags). See [docs/metrics.md](docs/metrics.md).
 
 ## Models evaluated
 
-11 LLMs (GPT-4o, GPT-5.4, GPT-5.4 mini, GPT-6 Sol, Claude Haiku 4.5, Claude Opus 4.8,
+12 LLMs (GPT-4o, GPT-5.4, GPT-5.4 mini, GPT-6 Sol, Claude Haiku 4.5, Claude Opus 4.8, Claude Opus 5.5,
 Gemini 3.1 Pro, Gemini 3.1 Flash-Lite, DeepSeek V4 Pro, DeepSeek V4.1 Flash, MedGemma 27B),
 2 third-party structured classifiers (`jev`, `laya`) and 4 deterministic anesthesia controllers
 (`rules`, `pid`, `clads`, `fuzzy`). Configuration per model (backend, temperature, verified
@@ -49,7 +49,7 @@ reasoning) is in [docs/evaluation_protocol.md](docs/evaluation_protocol.md).
 | | consensus | plausible |
 |---|---|---|
 | Human reference zone (real clinician vs consensus) | 0.570 | 0.816 |
-| Best LLM | 0.327 (GPT-5.4) | 0.541 (DeepSeek V4.1 Flash) |
+| Best LLM | 0.348 (Claude Opus 5.5) | 0.541 (DeepSeek V4.1 Flash) |
 | Floor: always `no_action` (strict) | 0.271 | — |
 | Floor: repeat previous action (strict) | 0.325 | — |
 
@@ -57,9 +57,9 @@ reasoning) is in [docs/evaluation_protocol.md](docs/evaluation_protocol.md).
 - In the hypnotic-only subgroup (3-option prompt, same action space as the controllers), the
   best recent LLMs match the deterministic controllers, and **all systems score below the
   trivial "always `no_action`" floor** (0.643 strict).
-- The four models with the lowest red-flag rates are the four that reason (GPT-6 Sol,
-  DeepSeek V4.1 Flash, DeepSeek V4 Pro, Gemini 3.1 Pro), all below the clinician's own rate
-  (0.032).
+- The five models with the lowest red-flag rates are the five that reason (Claude Opus 5.5,
+  GPT-6 Sol, DeepSeek V4.1 Flash, DeepSeek V4 Pro, Gemini 3.1 Pro), all below the clinician's
+  own rate (0.032).
 
 Full tables: [results/analysis/report.md](results/analysis/report.md) and
 [results/analysis/no_opioid_report.md](results/analysis/no_opioid_report.md).

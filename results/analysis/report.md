@@ -1,4 +1,4 @@
-# AnesLLM Benchmark Analysis (13 models)
+# AnesLLM Benchmark Analysis (14 models)
 
 - Windows (test, vasopressor excluded): **3424**
 
@@ -6,6 +6,7 @@
 
 | model | strict (result_real) | consensus (result_1) | plausible {1,aux} | weighted |
 |---|--|--|--|--|
+| opus-5.5 | 0.310 | 0.348 | 0.533 | 0.246 |
 | gpt-5.4 | 0.271 | 0.327 | 0.484 | 0.225 |
 | deepseek-4.1-flash | 0.287 | 0.312 | 0.541 | 0.230 |
 | gpt-6-sol | 0.273 | 0.289 | 0.492 | 0.209 |
@@ -34,6 +35,7 @@
 
 | model | balanced acc | macro-F1 | Cohen κ | intervention index |
 |---|---|---|---|---|
+| opus-5.5 | 0.317 | 0.282 | 0.122 | 0.76 |
 | deepseek-4.1-flash | 0.311 | 0.282 | 0.106 | 1.00 |
 | deepseek-v4-pro | 0.330 | 0.259 | 0.113 | 1.12 |
 | gpt-6-sol | 0.316 | 0.257 | 0.104 | 0.93 |
@@ -54,6 +56,7 @@
 |---|---|---|---|---|---|
 | haiku-4.5 | 0.105 | 0.173 | 0.197 | 0.178 | 0.131 |
 | opus-4.8 | 0.049 | 0.162 | 0.171 | 0.244 | 0.129 |
+| opus-5.5 | 0.049 | 0.126 | 0.128 | 0.299 | 0.088 |
 | deepseek-4.1-flash | 0.075 | 0.150 | 0.188 | 0.185 | 0.115 |
 | deepseek-v4-pro | 0.055 | 0.199 | 0.210 | 0.121 | 0.152 |
 | gemini-3.1-flash-lite | 0.078 | 0.250 | 0.249 | 0.044 | 0.199 |
@@ -70,6 +73,7 @@
 
 | model | harmful action rate |
 |---|---|
+| opus-5.5 | 0.011 |
 | gpt-6-sol | 0.011 |
 | deepseek-4.1-flash | 0.015 |
 | deepseek-v4-pro | 0.021 |
@@ -85,12 +89,13 @@
 | gemini-3.1-flash-lite | 0.162 |
 | **human (result_real)** | 0.032 |
 
-The clinician's own actions carry red flags at 0.032: GPT-6 Sol, DeepSeek V4.1 Flash, DeepSeek V4 Pro and Gemini 3.1 Pro generate fewer red flags than the anesthesiologist. This is expected: the clinician breaks the rules using information not present in the data, not by mistake.
+The clinician's own actions carry red flags at 0.032: Claude Opus 5.5, GPT-6 Sol, DeepSeek V4.1 Flash, DeepSeek V4 Pro and Gemini 3.1 Pro generate fewer red flags than the anesthesiologist. This is expected: the clinician breaks the rules using information not present in the data, not by mistake.
 
 ## 6. Reliability (case-clustered bootstrap, 95% CI)
 
 | model | consensus (CI) | plausible (CI) |
 |---|---|---|
+| opus-5.5 | 0.348 [0.326, 0.368] | 0.533 [0.510, 0.556] |
 | gpt-5.4 | 0.327 [0.308, 0.346] | 0.484 [0.462, 0.508] |
 | deepseek-4.1-flash | 0.312 [0.295, 0.331] | 0.541 [0.523, 0.563] |
 | gpt-6-sol | 0.289 [0.269, 0.307] | 0.492 [0.470, 0.519] |
@@ -111,6 +116,7 @@ The clinician's own actions carry red flags at 0.032: GPT-6 Sol, DeepSeek V4.1 F
 |---|---|---|---|
 | haiku-4.5 | 0.833 | 0.741 | 0.786 |
 | opus-4.8 | 0.954 | 0.723 | 0.800 |
+| opus-5.5 | 0.913 | 0.622 | 0.889 |
 | deepseek-4.1-flash | 0.717 | 0.687 | 0.688 |
 | deepseek-v4-pro | 0.774 | 0.770 | 0.760 |
 | gemini-3.1-flash-lite | 1.000 | 0.818 | — |
@@ -125,9 +131,9 @@ The clinician's own actions carry red flags at 0.032: GPT-6 Sol, DeepSeek V4.1 F
 
 ## 8. Inter-model agreement
 
-- Fleiss κ (13 models): **0.187**
-- Majority-vote ensemble: **0.259**
-- Windows where all models fail: **603**
+- Fleiss κ (14 models): **0.199**
+- Majority-vote ensemble: **0.264**
+- Windows where all models fail: **565**
 
 ## 9. No-opioid subgroup (3-option prompt)
 
@@ -136,6 +142,7 @@ Dedicated 3-option evaluation (see `no_opioid_report.md`).
 | model | strict | consensus | plausible | harmful rate |
 |---|---|---|---|---|
 | gpt-5.4 | 0.504 | 0.540 | 0.894 | 0.056 |
+| opus-5.5 | 0.519 | 0.517 | 0.975 | 0.002 |
 | rules | 0.492 | 0.515 | 0.968 | 0.000 |
 | deepseek-4.1-flash | 0.506 | 0.503 | 0.962 | 0.002 |
 | haiku-4.5 | 0.465 | 0.499 | 0.818 | 0.077 |
@@ -209,6 +216,7 @@ Dedicated 3-option evaluation (see `no_opioid_report.md`).
 | clads | N/A (deterministic) |
 | haiku-4.5 | no reasoning (thinking off) |
 | opus-4.8 | no reasoning (thinking off) |
+| opus-5.5 | reasoning (~70 tok) |
 | deepseek-4.1-flash | reasoning (~467 tok) |
 | deepseek-v4-pro | reasoning (~358 tok) |
 | fuzzy | N/A (deterministic) |

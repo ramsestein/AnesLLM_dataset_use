@@ -6,6 +6,7 @@ deepseek-v4-pro,,,,,,,,,,,,,No published medical benchmark results found
 gemini-3.1-pro-preview,,,96.4,,81.0,,~45,0.683,0.43,0.46,0.68,0.30,"MedQA from Vals AI (2,000 Qs, archived); MedXpertQA MM self-reported (aggregators list 80.7-81.3); HealthBench Professional read from figure in OpenAI paper; HeaRTS VitalDB per-task values look imputed (0.43 below chance) - verify before citing; RealICU with ICU-Evo agent"
 gpt-5.4-mini,,,,,,,,,,,,,No published medical benchmark results found
 claude-opus-4-8,,,,,,,55.8,,,,,,HealthBench Professional from Anthropic system card (via DataCamp); scoring may differ from OpenAI's length-adjusted protocol
+claude-opus-5-5,,,,,,,,,,,,,No published medical benchmark results found
 claude-haiku-4-5-20251001,,,,,,,,0.629,0.73,,,,
 gpt-4o,0.77,0.59,86.5,30.4,42.8,0.32,,,,,,,MedQA from MedGemma technical report; MedXpertQA from official leaderboard; HealthBench from OpenAI paper (0-1 scale)
 gemini-3.1-flash-lite,,,,,,,,,,,,,No published medical benchmark results found

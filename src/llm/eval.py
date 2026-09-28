@@ -79,6 +79,10 @@ def parse_letter(text, letters="abcde"):
     m = re.match(rf"^\s*\(?([{letters}])\)?\s*(?:[-.:\u2013\u2014]|$)", t, re.IGNORECASE)
     if m:
         return m.group(1).lower()
+    # decisión en negrita al inicio: "**b**", "**b**\n..."
+    m = re.match(rf"^\s*\*\*\s*([{letters}])\s*\*\*", t, re.IGNORECASE)
+    if m:
+        return m.group(1).lower()
     # patrones explícitos: "answer: c", "option c", "choose c", ...
     m = (re.search(rf"\banswer\b[^{letters}]{{0,20}}\b([{letters}])\b", t, re.IGNORECASE)
          or re.search(rf"\boption\b[^{letters}]{{0,20}}\b([{letters}])\b", t, re.IGNORECASE)
@@ -182,37 +186,77 @@ def call_gemini(model, prompt):
     raise RuntimeError("gemini: respuesta sin letra")
 
 
+# combos (temperature, thinking) que devuelven 400, por modelo. Se recuerdan entre
+# ventanas para no reintentar parámetros que el modelo no acepta (p. ej. claude-opus-5-5
+# rechaza `temperature` y `thinking: {"type": "disabled"}`).
+_CLAUDE_BAD_COMBOS = {}
+
+
+def _claude_blocks(r):
+    """Devuelve (texto, razonamiento) de una respuesta de Anthropic.
+
+    `texto` = bloques {"type": "text"}; `razonamiento` = bloques {"type": "thinking"}.
+    """
+    texts = []
+    thinking = []
+    for block in r.get("content") or []:
+        if not isinstance(block, dict):
+            continue
+        if block.get("type") == "text" and block.get("text"):
+            texts.append(block["text"])
+        elif block.get("type") == "thinking" and block.get("thinking"):
+            thinking.append(block["thinking"])
+    return "\n".join(texts).strip(), "\n".join(thinking).strip()
+
+
 def call_claude(model, prompt):
     key = os.environ.get("CLAUDE_API_KEY")
     if not key:
         raise RuntimeError("missing CLAUDE_API_KEY")
     headers = {"x-api-key": key, "anthropic-version": "2023-06-01",
                "Content-Type": "application/json"}
-    # opus-4-8 rechaza temperature; desactivamos thinking para minimizar output
+    bad = _CLAUDE_BAD_COMBOS.setdefault(model, set())
+    # orden de preferencia: thinking desactivado (menos output); si el modelo lo
+    # rechaza (400) se cae automáticamente al siguiente combo en las siguientes caps.
+    combos = [(0, {"type": "disabled"}), (None, {"type": "disabled"}), (None, None)]
+    last_text = None
     last_reasoning = None
     for cap in CAPS:
-        for temperature in (0, None):
-            for thinking in ({"type": "disabled"}, None):
-                payload = {"model": model, "max_tokens": cap,
-                           "messages": [{"role": "user", "content": prompt}]}
-                if temperature is not None:
-                    payload["temperature"] = temperature
-                if thinking is not None:
-                    payload["thinking"] = thinking
-                try:
-                    r = http_post_json(
-                        "https://api.anthropic.com/v1/messages", headers, payload)
-                except urllib.error.HTTPError as e:
-                    if e.code == 400:
-                        continue
-                    raise
-                text = r["content"][0]["text"] or ""
-                if is_clean_letter(text):
-                    return text
-                # razonamiento: guardar el más completo y subir el tope
-                if text and (last_reasoning is None or len(text) > len(last_reasoning)):
-                    last_reasoning = text
-    # sin respuesta limpia: extraer la decisión del razonamiento completo
+        for temperature, thinking in combos:
+            combo_key = (temperature, json.dumps(thinking, sort_keys=True))
+            if combo_key in bad:
+                continue
+            payload = {"model": model, "max_tokens": cap,
+                       "messages": [{"role": "user", "content": prompt}]}
+            if temperature is not None:
+                payload["temperature"] = temperature
+            if thinking is not None:
+                payload["thinking"] = thinking
+            try:
+                r = http_post_json(
+                    "https://api.anthropic.com/v1/messages", headers, payload)
+            except urllib.error.HTTPError as e:
+                if e.code == 400:
+                    bad.add(combo_key)
+                    continue
+                raise
+            text, thinking_text = _claude_blocks(r)
+            # devolver en cuanto el bloque de texto contenga una decisión. Los
+            # modelos con thinking devuelven texto parcial solo en bloques
+            # "thinking" (nunca en "text"), así que esto es seguro.
+            if text and parse_letter(text):
+                return text
+            # guardar el texto de respuesta y el razonamiento más completos
+            if text and (last_text is None or len(text) > len(last_text)):
+                last_text = text
+            if thinking_text and (last_reasoning is None
+                                  or len(thinking_text) > len(last_reasoning)):
+                last_reasoning = thinking_text
+    # prioridad: el bloque de texto de la respuesta (puede llevar la decisión
+    # en negrita al principio); si no, se cae al razonamiento completo.
+    letter = parse_letter(last_text) if last_text else None
+    if letter:
+        return last_text
     letter = parse_letter(last_reasoning) if last_reasoning else None
     if letter:
         return letter

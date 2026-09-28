@@ -30,6 +30,7 @@ LLM_MODELS = [
     ("gpt-6-sol", "openai", 8),
     ("claude-haiku-4-5-20251001", "claude", 8),
     ("claude-opus-4-8", "claude", 8),
+    ("claude-opus-5-5", "claude", 8),
     ("medgemma:27b", "ollama", 4),
 ]
 

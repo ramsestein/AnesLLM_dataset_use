@@ -53,6 +53,7 @@ MODELS = [
     ("deepseek-v4-pro", "https://api.deepseek.com", "DEEPSEEK_API_KEY", "openai"),
     ("gemini-3.1-flash-lite", None, "GEMINI_API_KEY", "gemini"),
     ("gemini-3.1-pro-preview", None, "GEMINI_API_KEY", "gemini"),
+    ("claude-opus-5-5", None, "CLAUDE_API_KEY", "claude"),
 ]
 
 
@@ -74,6 +75,27 @@ def gemini_thoughts(r):
         return um.get("thoughtsTokenCount"), um.get("candidatesTokenCount")
     except (KeyError, TypeError):
         return None, None
+
+
+def claude_reasoning(r):
+    """Tokens de razonamiento (thinking) de Claude.
+
+    Los modelos con thinking adaptativo no devuelven el bloque thinking en
+    `content`, pero informan `usage.output_tokens_details.thinking_tokens`.
+    Si no está disponible, se estima con los bloques thinking (~4 chars/token).
+    Devuelve (thinking_tokens, output_tokens).
+    """
+    usage = r.get("usage") or {}
+    det = usage.get("output_tokens_details") or {}
+    rt = det.get("thinking_tokens")
+    if rt is None:
+        think_chars = 0
+        for block in r.get("content") or []:
+            if isinstance(block, dict) and block.get("type") == "thinking":
+                think_chars += len(block.get("thinking") or "")
+        rt = round(think_chars / 4) if think_chars else 0
+    total = usage.get("output_tokens")
+    return rt, total
 
 
 def call_openai(model, base_url, key_env):
@@ -99,15 +121,31 @@ def call_gemini(model, key_env):
     return gemini_thoughts(r), r
 
 
+def call_claude(model, key_env):
+    key = os.environ.get(key_env)
+    if not key:
+        raise RuntimeError(f"missing {key_env}")
+    headers = {"x-api-key": key, "anthropic-version": "2023-06-01",
+               "Content-Type": "application/json"}
+    payload = {"model": model, "max_tokens": 1024,
+               "messages": [{"role": "user", "content": PROMPT}]}
+    r = http_post_json("https://api.anthropic.com/v1/messages", headers, payload)
+    return claude_reasoning(r), r
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--n", type=int, default=10, help="llamadas por modelo")
+    ap.add_argument("--model", default="", help="filtrar por nombre de modelo")
     args = ap.parse_args()
     load_env()
 
+    models = [(m, b, k, t) for m, b, k, t in MODELS
+              if not args.model or m == args.model]
+
     print(f"{'model':28s} {'n':>3s} {'reasoning_ok':>13s} {'avg_reason':>11s} {'avg_total':>10s}  conclusion")
     print("-" * 90)
-    for model, base_url, key_env, kind in MODELS:
+    for model, base_url, key_env, kind in models:
         counts = []
         totals = []
         errs = 0
@@ -115,8 +153,10 @@ def main():
             try:
                 if kind == "openai":
                     (rt, tot), _ = call_openai(model, base_url, key_env)
-                else:
+                elif kind == "gemini":
                     (rt, tot), _ = call_gemini(model, key_env)
+                else:
+                    (rt, tot), _ = call_claude(model, key_env)
                 if rt is not None:
                     counts.append(rt)
                 if tot is not None:

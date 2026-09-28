@@ -18,7 +18,7 @@
 
 ## Notas
 
-- **S2** reúne el registro de los 17 sistemas evaluados (11 LLM + 2 clasificadores + 4 controladores deterministas). El campo *razonamiento* proviene de `src/verify_reasoning.py` (verificación empírica de tokens de pensamiento).
+- **S2** reúne el registro de los 18 sistemas evaluados (12 LLM + 2 clasificadores + 4 controladores deterministas). El campo *razonamiento* proviene de `src/verify_reasoning.py` (verificación empírica de tokens de pensamiento).
 - **S4** incluye el k-anonimato a nivel de ventana (dos escenarios: solo demografía vs. demografía + vitales), calculado redondeando las variables cuantitativas a enteros. Los identificadores directos `pt_caseid`/`pt_subjectid` están presentes y deben eliminarse antes de cualquier liberación pública.
 - **S5** cubre los sistemas no deterministas (LLM y clasificadores); los controladores deterministas se describen en S10.
 - **S8** corresponde a la revisión externa corregida: el juicio real de los revisores es la columna `appropriate`, no `valid_actions` (control interno de la herramienta).

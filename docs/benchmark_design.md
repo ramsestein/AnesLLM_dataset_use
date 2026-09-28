@@ -76,12 +76,12 @@ vasopressor (555 windows; class distribution: 357 `no_action`, 131 `reduce_hypno
 
 ## 6. Systems evaluated
 
-### 6.1 LLMs (11)
+### 6.1 LLMs (12)
 
 | Model | Provider / backend |
 |---|---|
 | `gpt-4o`, `gpt-5.4`, `gpt-5.4-mini`, `gpt-6-sol` | OpenAI API |
-| `claude-haiku-4-5-20251001`, `claude-opus-4-8` | Anthropic API |
+| `claude-haiku-4-5-20251001`, `claude-opus-4-8`, `claude-opus-5-5` | Anthropic API |
 | `gemini-3.1-pro-preview`, `gemini-3.1-flash-lite` | Google Gemini API |
 | `deepseek-v4-pro`, DeepSeek V4.1 Flash (`deepseek-flash` in the result files) | DeepSeek API |
 | `medgemma:27b` | Local, via Ollama |

@@ -9,6 +9,7 @@ gemini-3.1-flash-lite,Google,gemini,0,no reasoning,3457,2026-09-24 to 2026-09-25
 gemini-3.1-pro-preview,Google,gemini,0,reasoning (~224 tok),3457,2026-09-24 to 2026-09-25
 claude-haiku-4-5-20251001,Anthropic,claude,0,no reasoning (thinking off),3457,2026-09-24 to 2026-09-25
 claude-opus-4-8,Anthropic,claude,default (rejects 0),no reasoning (thinking off),3457,2026-09-24 to 2026-09-25
+claude-opus-5-5,Anthropic,claude,not accepted (deprecated),reasoning (~70 tok),3457,2026-09-28
 medgemma:27b,Ollama (local),ollama,0,no reasoning,3457,2026-09-24 to 2026-09-25
 laya,local (convaiinnovations/laya),laya,N/A,N/A (classifier),3457,2026-09-24 to 2026-09-25
 jev,JEV (thejevai.com),jev,N/A,N/A (classifier),3457,2026-09-24 to 2026-09-25

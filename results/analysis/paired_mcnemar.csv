@@ -1,5 +1,6 @@
 ﻿model_a,model_b,mcnemar_p
 claude-haiku-4-5-20251001,claude-opus-4-8,0.001595
+claude-haiku-4-5-20251001,claude-opus-5-5,0.0
 claude-haiku-4-5-20251001,deepseek-flash,0.0
 claude-haiku-4-5-20251001,deepseek-v4-pro,1e-06
 claude-haiku-4-5-20251001,gemini-3.1-flash-lite,0.000121
@@ -11,6 +12,7 @@ claude-haiku-4-5-20251001,gpt-6-sol,0.0
 claude-haiku-4-5-20251001,jev,0.000383
 claude-haiku-4-5-20251001,laya,0.140127
 claude-haiku-4-5-20251001,medgemma:27b,0.003665
+claude-opus-4-8,claude-opus-5-5,0.0
 claude-opus-4-8,deepseek-flash,0.0
 claude-opus-4-8,deepseek-v4-pro,0.025877
 claude-opus-4-8,gemini-3.1-flash-lite,0.0
@@ -22,6 +24,17 @@ claude-opus-4-8,gpt-6-sol,0.000281
 claude-opus-4-8,jev,0.898694
 claude-opus-4-8,laya,0.241779
 claude-opus-4-8,medgemma:27b,0.0
+claude-opus-5-5,deepseek-flash,0.002181
+claude-opus-5-5,deepseek-v4-pro,0.0
+claude-opus-5-5,gemini-3.1-flash-lite,0.0
+claude-opus-5-5,gemini-3.1-pro-preview,0.0
+claude-opus-5-5,gpt-4o,0.0
+claude-opus-5-5,gpt-5.4,1e-06
+claude-opus-5-5,gpt-5.4-mini,0.0
+claude-opus-5-5,gpt-6-sol,0.0
+claude-opus-5-5,jev,0.0
+claude-opus-5-5,laya,0.0
+claude-opus-5-5,medgemma:27b,0.0
 deepseek-flash,deepseek-v4-pro,0.000792
 deepseek-flash,gemini-3.1-flash-lite,0.0
 deepseek-flash,gemini-3.1-pro-preview,2e-06
