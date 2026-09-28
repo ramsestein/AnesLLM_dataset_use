@@ -231,7 +231,36 @@ def _scatter(nop, hflag, models):
     print(f"  {IMG.relative_to(analyze.ROOT) / 'subgroup_harmful_vs_accuracy.png'}")
 
 
-def write_report(nop, hflag, models, floors, ds):
+def subgroup_bootstrap(nop, models, pred, gt, n_iter=1000, seed=42):
+    """IC 95 % por bootstrap agrupado por caso (strict/consensus/plausibility)."""
+    wids = nop["wids"]
+    case_windows = {}
+    for w in wids:
+        case_windows.setdefault(gt[w]["case_id"], []).append(w)
+
+    out = {}
+    for m in models:
+        flags = {}
+        for w in wids:
+            p = pred[m].get(w)
+            flags[w] = {
+                "strict": p == gt[w]["result_real"],
+                "consensus": p == gt[w]["result_1_action"],
+                "plausibility": p in (gt[w]["result_1_action"], gt[w]["result_aux_action"]),
+            }
+        row = {}
+        for key in ["strict", "consensus", "plausibility"]:
+            def metric(sample, k=key, f=flags):
+                return (sum(1 for w in sample if f[w][k]) / len(sample)) if sample else 0.0
+            row[key] = round(nop["models"][m][key], 4)
+            lo, hi = analyze.bootstrap_ci(case_windows, metric, n_iter, seed)
+            row[key + "_lo"] = round(lo, 4)
+            row[key + "_hi"] = round(hi, 4)
+        out[m] = row
+    return out
+
+
+def write_report(nop, hflag, models, floors, ds, boot):
     lines = []
     lines.append("# AnesLLM No-opioid Subgroup Analysis (3-option prompt)")
     lines.append("")
@@ -258,6 +287,17 @@ def write_report(nop, hflag, models, floors, ds):
     lines.append("|---|---|")
     for m in sorted(models, key=lambda m: hflag[m]):
         lines.append(f"| {analyze.disp(m)} | {hflag[m]:.3f} |")
+    lines.append("")
+    lines.append("## 3. Reliability (case-clustered bootstrap, 95% CI)")
+    lines.append("")
+    lines.append("| model | strict [CI] | consensus [CI] | plausible [CI] |")
+    lines.append("|---|---|---|---|")
+    for m in sorted(models, key=lambda m: -boot[m]["consensus"]):
+        b = boot[m]
+        lines.append(f"| {analyze.disp(m)} | "
+                     f"{b['strict']:.3f} [{b['strict_lo']:.3f}, {b['strict_hi']:.3f}] | "
+                     f"{b['consensus']:.3f} [{b['consensus_lo']:.3f}, {b['consensus_hi']:.3f}] | "
+                     f"{b['plausibility']:.3f} [{b['plausibility_lo']:.3f}, {b['plausibility_hi']:.3f}] |")
     lines.append("")
     (OUT / "no_opioid_report.md").write_text("\n".join(lines), encoding="utf-8")
     print(f"  {OUT.relative_to(analyze.ROOT) / 'no_opioid_report.md'}")
@@ -313,13 +353,21 @@ def main():
               ["n_windows", "human_consensus", "human_plausible",
                "human_safety", "class_distribution"])
 
+    # bootstrap: IC95 por caso para strict/consensus/plausibility
+    boot = subgroup_bootstrap(nop, models, pred, gt)
+    write_csv(OUT / "no_opioid_subgroup_ci.csv",
+              [{"model": m, **boot[m]} for m in models],
+              ["model", "strict", "strict_lo", "strict_hi",
+               "consensus", "consensus_lo", "consensus_hi",
+               "plausibility", "plausibility_lo", "plausibility_hi"])
+
     # gráficas: ranking por consensus + scatter con todos los modelos
     _rank_chart(nop, models, "consensus", nop["human_consensus"],
                 "subgroup_ranking_consensus.png")
     scatter_models = models
     _scatter(nop, hflag, scatter_models)
 
-    write_report(nop, hflag, models, floors, ds)
+    write_report(nop, hflag, models, floors, ds, boot)
     print("análisis no-opioide completo en", OUT)
 
 
