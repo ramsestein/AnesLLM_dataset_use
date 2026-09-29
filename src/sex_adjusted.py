@@ -7,6 +7,7 @@ estructura de correlación de trabajo intercambiable y errores estándar robusto
 
   - Acción contraindicada (cualquier red flag):
         sexo + PAM + BIS + FC + edad + ASA + tipo de cirugía
+  - Acción contraindicada + antropometría (mismo modelo + peso y talla)
   - Acierto de consenso (predicción == result_1):
         sexo + PAM + BIS + FC + edad + ASA + tipo de cirugía + peso + talla
 
@@ -136,12 +137,18 @@ def main():
         df["contra"] = contra
         df["consensus"] = consensus
 
+        n_ev = int(df["contra"].sum())
         res_c, n_c = fit_gee(df, "contra", with_body=False)
+        res_cb, n_cb = fit_gee(df, "contra", with_body=True)
         res_n, n_n = fit_gee(df, "consensus", with_body=True)
         if res_c is not None:
             contra_rows.append(extract_sex(name, "contraindicated", res_c, n_c,
-                                           n_events=int(df["contra"].sum())))
+                                           n_events=n_ev))
             full_rows += extract_full(name, "contraindicated", res_c)
+        if res_cb is not None:
+            contra_rows.append(extract_sex(name, "contraindicated+anthropometry",
+                                           res_cb, n_cb, n_events=n_ev))
+            full_rows += extract_full(name, "contraindicated+anthropometry", res_cb)
         if res_n is not None:
             cons_rows.append(extract_sex(name, "consensus", res_n, n_n))
             full_rows += extract_full(name, "consensus", res_n)
@@ -237,11 +244,14 @@ def write_summary(contra_rows, cons_rows, df):
     lines.append(f"Complete-case windows: {len(df)}.")
     lines.append("")
 
+    contra_plain = [r for r in contra_rows if r["outcome"] == "contraindicated"]
+    contra_body = [r for r in contra_rows if r["outcome"] == "contraindicated+anthropometry"]
+
     lines.append("## 1. Contraindicated action: sex effect (adjusted)")
     lines.append("")
     lines.append("| system | n | events | sex OR (F vs M) | 95 % CI | p |")
     lines.append("|---|---|---|---|---|---|")
-    for r in contra_rows:
+    for r in contra_plain:
         lo, hi = or_ci(r)
         flag = " *" if r.get("unstable") else ""
         lines.append(f"| {analyze.disp(r['system'])}{flag} | {r['n']} | {r.get('n_events', '')} | "
@@ -252,7 +262,21 @@ def write_summary(contra_rows, cons_rows, df):
                  "(`sex_opportunity.md`).")
     lines.append("")
 
-    lines.append("## 2. Consensus accuracy: sex effect (adjusted)")
+    lines.append("## 2. Contraindicated action + anthropometry: sex effect")
+    lines.append("")
+    lines.append("Same as §1 plus weight and height. If the sex effect shrinks here, "
+                 "anthropometry is the likely channel.")
+    lines.append("")
+    lines.append("| system | n | events | sex OR (F vs M) | 95 % CI | p |")
+    lines.append("|---|---|---|---|---|---|")
+    for r in contra_body:
+        lo, hi = or_ci(r)
+        flag = " *" if r.get("unstable") else ""
+        lines.append(f"| {analyze.disp(r['system'])}{flag} | {r['n']} | {r.get('n_events', '')} | "
+                     f"{r['sex_or']} | [{lo}, {hi}] | {r['sex_p']} |")
+    lines.append("")
+
+    lines.append("## 3. Consensus accuracy: sex effect (adjusted)")
     lines.append("")
     lines.append("| system | n | sex OR (F vs M) | 95 % CI | p |")
     lines.append("|---|---|---|---|---|")
@@ -262,7 +286,7 @@ def write_summary(contra_rows, cons_rows, df):
                      f"[{lo}, {hi}] | {r['sex_p']} |")
     lines.append("")
 
-    lines.append("## 3. Surgery type (keyword grouping, for reference)")
+    lines.append("## 4. Surgery type (keyword grouping, for reference)")
     lines.append("")
     counts = df.groupby("case_id")["surgery"].first().value_counts()
     lines.append("| surgery type | cases |")

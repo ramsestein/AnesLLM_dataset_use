@@ -26,7 +26,29 @@ Complete-case windows: 3088.
 
 * marked rows: few contraindicated events (< 50) or extreme coefficients — estimates are unstable; read alongside the opportunity/behavior analysis (`sex_opportunity.md`).
 
-## 2. Consensus accuracy: sex effect (adjusted)
+## 2. Contraindicated action + anthropometry: sex effect
+
+Same as §1 plus weight and height. If the sex effect shrinks here, anthropometry is the likely channel.
+
+| system | n | events | sex OR (F vs M) | 95 % CI | p |
+|---|---|---|---|---|---|
+| haiku-4.5 | 3088 | 261 | 1.488 | [0.892, 2.48] | 0.1279 |
+| opus-4.8 | 3088 | 262 | 1.204 | [0.697, 2.08] | 0.5045 |
+| opus-5.5 * | 3088 | 29 | 1056.643 | [11.899, 93839.392] | 0.0024 |
+| deepseek-4.1-flash * | 3088 | 43 | 2.201 | [0.508, 9.531] | 0.2916 |
+| deepseek-v4-pro | 3088 | 65 | 1.261 | [0.379, 4.194] | 0.7058 |
+| gemini-3.1-flash-lite | 3088 | 526 | 1.174 | [0.733, 1.883] | 0.5043 |
+| gemini-3.1-pro-preview | 3088 | 91 | 1.078 | [0.463, 2.51] | 0.8613 |
+| gpt-4o | 3088 | 304 | 0.799 | [0.435, 1.467] | 0.4694 |
+| gpt-5.4 | 3088 | 115 | 1.555 | [0.734, 3.295] | 0.249 |
+| gpt-5.4-mini | 3088 | 361 | 0.916 | [0.565, 1.483] | 0.7208 |
+| gpt-6-sol * | 3088 | 33 | 9.89 | [0.748, 130.689] | 0.0819 |
+| jev | 3088 | 250 | 1.484 | [0.829, 2.657] | 0.1839 |
+| laya | 3088 | 137 | 0.887 | [0.345, 2.279] | 0.8036 |
+| medgemma:27b | 3088 | 424 | 1.061 | [0.629, 1.789] | 0.8244 |
+| anesthesiologist | 3088 | 100 | 1.934 | [0.826, 4.53] | 0.1288 |
+
+## 3. Consensus accuracy: sex effect (adjusted)
 
 | system | n | sex OR (F vs M) | 95 % CI | p |
 |---|---|---|---|---|
@@ -46,7 +68,7 @@ Complete-case windows: 3088.
 | medgemma:27b | 3088 | 1.336 | [0.831, 2.146] | 0.2316 |
 | anesthesiologist | 3088 | 1.206 | [0.909, 1.602] | 0.1946 |
 
-## 3. Surgery type (keyword grouping, for reference)
+## 4. Surgery type (keyword grouping, for reference)
 
 | surgery type | cases |
 |---|---|
