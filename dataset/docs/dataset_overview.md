@@ -25,6 +25,10 @@ split into three complementary sets:
 | `dev`   | edge cases (heavy missing data) for engineering | 25 | 423 |
 | **Total** | | **3,168** | **84,813** |
 
+All ages were included: **6–92 years** (mean 57.8 ± 14.4). 10 cases (0.3 %) are pediatric
+(age < 18), all in the `train` partition; `dev` (39–75) and `test` (23–88) contain no
+pediatric cases. Full age profile in `reports/age_profile.csv`.
+
 ## What a record looks like
 
 One JSON line per decision window, in per-case files `case<caseid>.jsonl`:

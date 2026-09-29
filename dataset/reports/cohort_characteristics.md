@@ -5,7 +5,7 @@ Case-level characteristics (age, sex, ASA, surgery type, anesthesia duration, wi
 | Characteristic | train (n=2,994 cases) | dev (n=25 cases) | test (n=149 cases) |
 |---|---|---|---|
 | Windows, n | 80,933 | 423 | 3,457 |
-| Age, years, mean ± SD | 57.8 ± 14.4 | 56.1 ± 11.2 | 57.4 ± 14.4 |
+| Age, years, mean ± SD (min–max) | 57.8 ± 14.4 (6–92) | 56.1 ± 11.2 (39–75) | 57.4 ± 14.4 (23–88) |
 | Sex, F, n (%) | 1,484 (49.6%) | 15 (60.0%) | 74 (49.7%) |
 | Sex, M, n (%) | 1,510 (50.4%) | 10 (40.0%) | 75 (50.3%) |
 | ASA 1, n (%) | 712 (23.8%) | 12 (48.0%) | 42 (28.2%) |
@@ -36,4 +36,4 @@ Case-level characteristics (age, sex, ASA, surgery type, anesthesia duration, wi
 | result_real, reduce_opioid, n (%) | 22,470 (27.8%) | 122 (28.8%) | 940 (27.2%) |
 | result_real, no_action, n (%) | 22,610 (27.9%) | 85 (20.1%) | 943 (27.3%) |
 
-*Note: anesthesia duration = pt_aneend − pt_anestart, clipped to [0, 24] h to exclude 81 windows with out-of-range timestamps. ASA VI (n small) = organ donors. `monitoring_type` and `result_real` are window-level; the rest are case-level.*
+*Note: anesthesia duration = pt_aneend − pt_anestart, clipped to [0, 24] h to exclude 81 windows with out-of-range timestamps. ASA VI (n small) = organ donors. `monitoring_type` and `result_real` are window-level; the rest are case-level. All ages were included (range 6–92 years). 10 cases (0.3 %) are pediatric (age < 18), all in the train partition; neither dev nor test contains pediatric cases (test min 23 years). See `age_profile.csv`.*
