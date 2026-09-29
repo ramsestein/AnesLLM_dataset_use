@@ -27,7 +27,7 @@ Checklist adaptado de TRIPOD+AI / TRIPOD-LLM. Estado por ítem: **Sí** (reporta
 | 7 | Vocabulario de acciones (5 clases + vasopressor como opción) | Sí | `dataset_overview.md` |
 | 8 | Criterios de inclusión/exclusión y curación de casos | Sí | `dataset/docs/audit_report.md` §1–9 |
 | 9 | Splits (train/dev/test) y cómo se estratificó | Sí | `dataset_overview.md`, `split_manifest.csv` |
-| 10 | Tamaño de la muestra (84 813 ventanas, 3 168 casos) | Sí | `dataset_overview.md` |
+| 10 | Tamaño de la muestra y justificación (84 813 ventanas, 3 168 casos; partición de prueba: 149 casos / 3 424 ventanas, precisión ≈ ±0.02) | Sí | `dataset_overview.md`, `metrics.md` §6 |
 | 11 | Variables de entrada (280 campos) y diccionario | Sí | `S03_data_dictionary.csv` |
 | 12 | Ground truth (result_real) y referencias alternativas (result_1/result_aux) | Sí | `evaluation_guide.md` §2–3 |
 | 13 | Ausentes y su tratamiento | Sí | `S04_audit/missingness.csv`, `coverage_by_variable.csv` |

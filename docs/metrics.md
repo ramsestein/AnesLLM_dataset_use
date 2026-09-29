@@ -71,6 +71,14 @@ taken with information not present in the data, not necessarily errors.
 
 ## 6. Statistical procedures
 
+- **Sample size**: the benchmark estimates accuracy metrics across many models rather than
+  testing a single pre-specified hypothesis, so the evaluation-set size is justified by the
+  precision it affords rather than by an a priori power calculation. On the test partition
+  (3,424 windows, 149 cases) the case-clustered bootstrap 95 % CIs have a half-width of
+  ≈ ±0.02 for strict and consensus accuracy (range ±0.015–0.026 across models and metrics),
+  i.e. a difference between models of about four percentage points is resolved with ~95 %
+  confidence; the paired McNemar results show between-model differences far larger than this
+  half-width.
 - **Confidence intervals**: 95 % percentile bootstrap **clustered by case** (cases resampled
   with replacement, 1,000 iterations, seed 42).
 - **Paired comparisons**: exact McNemar test on strict correctness for every pair of
