@@ -154,6 +154,57 @@ def mcnemar_p(b, c):
     return min(1.0, p)
 
 
+def holm_bonferroni(pvals):
+    """Corrección de Holm-Bonferroni (control del FWER) para una lista de p-valores."""
+    m = len(pvals)
+    order = sorted(range(m), key=lambda i: pvals[i])
+    adj = [0.0] * m
+    for rank, i in enumerate(order):
+        adj[i] = min(1.0, pvals[i] * (m - rank))
+    for k in range(1, m):
+        adj[order[k]] = max(adj[order[k]], adj[order[k - 1]])
+    return adj
+
+
+def benjamini_hochberg(pvals):
+    """Corrección de Benjamini-Hochberg (control del FDR) para una lista de p-valores."""
+    m = len(pvals)
+    order = sorted(range(m), key=lambda i: pvals[i])
+    adj = [0.0] * m
+    cummin = 1.0
+    for rank in range(m - 1, -1, -1):
+        i = order[rank]
+        cummin = min(cummin, min(1.0, pvals[i] * m / (rank + 1)))
+        adj[i] = cummin
+    return adj
+
+
+def multiplicity_adjust(matrix, p_key):
+    """Aplica correcciones de multiplicidad a una matriz {(a, b): p}.
+
+    Devuelve (filas, resumen). filas incluye el p crudo, Holm-Bonferroni y
+    Benjamini-Hochberg; resumen cuenta los pares significativos a α=0.05 y
+    α=0.01 bajo cada corrección.
+    """
+    pairs = sorted(matrix.items())
+    pvals = [p for _, p in pairs]
+    holm = holm_bonferroni(pvals)
+    bh = benjamini_hochberg(pvals)
+    rows = []
+    for ((a, b), p), h, q in zip(pairs, holm, bh):
+        rows.append({"model_a": a, "model_b": b,
+                     p_key: round(p, 6),
+                     f"{p_key}_holm": round(h, 6),
+                     f"{p_key}_bh": round(q, 6)})
+    summary = {
+        "n_pairs": len(pvals),
+        "raw": {a: sum(1 for p in pvals if p < a) for a in (0.05, 0.01)},
+        "holm": {a: sum(1 for h in holm if h < a) for a in (0.05, 0.01)},
+        "bh": {a: sum(1 for q in bh if q < a) for a in (0.05, 0.01)},
+    }
+    return rows, summary
+
+
 def bootstrap_ci(case_windows, metric, n_iter=1000, seed=42):
     """IC 95% por bootstrap agrupado por caso (remuestrea casos)."""
     rng = random.Random(seed)
@@ -788,15 +839,14 @@ def main():
               [{"model": m, **diff[m]} for m in full_models],
               ["model", "easy", "medium", "hard"])
     mcn = paired_mcnemar(full_models, pred, gt)
-    write_csv(OUT / "paired_mcnemar.csv",
-              [{"model_a": a, "model_b": b, "mcnemar_p": round(p, 6)}
-               for (a, b), p in sorted(mcn.items())],
-              ["model_a", "model_b", "mcnemar_p"])
+    mcn_rows, mcn_summary = multiplicity_adjust(mcn, "mcnemar_p")
+    write_csv(OUT / "paired_mcnemar.csv", mcn_rows,
+              ["model_a", "model_b", "mcnemar_p", "mcnemar_p_holm", "mcnemar_p_bh"])
     mcn_case = paired_mcnemar_case(full_models, pred, gt, case_windows)
-    write_csv(OUT / "paired_mcnemar_case.csv",
-              [{"model_a": a, "model_b": b, "mcnemar_case_p": round(p, 6)}
-               for (a, b), p in sorted(mcn_case.items())],
-              ["model_a", "model_b", "mcnemar_case_p"])
+    mcn_case_rows, mcn_case_summary = multiplicity_adjust(mcn_case, "mcnemar_case_p")
+    write_csv(OUT / "paired_mcnemar_case.csv", mcn_case_rows,
+              ["model_a", "model_b", "mcnemar_case_p", "mcnemar_case_p_holm",
+               "mcnemar_case_p_bh"])
     boot = bootstrap_accuracy(full_models, pred, gt, case_windows)
     write_csv(OUT / "bootstrap_ci.csv",
               [{"model": m,
@@ -863,13 +913,15 @@ def main():
 
     # --- reporte Markdown
     write_report(acc, cf, clf, tax, rf, diff, boot, cons, agree,
-                 full_models, models, hflag, reviewers, human_safety)
+                 full_models, models, hflag, reviewers, human_safety,
+                 mcn_summary, mcn_case_summary)
     make_plots(acc, cf, hflag, human_safety, full_models)
     print("análisis completo en", OUT)
 
 
 def write_report(acc, cf, clf, tax, rf, diff, boot, cons, agree,
-                 full_models, all_models, hflag, reviewers, human_safety):
+                 full_models, all_models, hflag, reviewers, human_safety,
+                 mcn_summary, mcn_case_summary):
     lines = []
     lines.append(f"# AnesLLM Benchmark Analysis ({len(full_models)} models)")
     lines.append("")
@@ -944,6 +996,25 @@ def write_report(acc, cf, clf, tax, rf, diff, boot, cons, agree,
         p = boot[m]["plausibility"]
         lines.append(f"| {disp(m)} | {c[0]:.3f} [{c[1]:.3f}, {c[2]:.3f}] | "
                      f"{p[0]:.3f} [{p[1]:.3f}, {p[2]:.3f}] |")
+    lines.append("")
+
+    lines.append("### 6.1 Pairwise differences (McNemar, multiplicity-corrected)")
+    lines.append("")
+    lines.append(f"{mcn_summary['n_pairs']} model pairs compared with the exact McNemar "
+                 "test on strict correctness. Multiplicity is accounted for with "
+                 "Holm-Bonferroni (family-wise error rate) and Benjamini-Hochberg "
+                 "(false-discovery rate); the full pairwise tables are `paired_mcnemar.csv` "
+                 "and the case-clustered sign-permutation version `paired_mcnemar_case.csv`.")
+    lines.append("")
+    lines.append("| correction | p/q < 0.05 | p/q < 0.01 |")
+    lines.append("|---|---|---|")
+    lines.append(f"| none (raw) | {mcn_summary['raw'][0.05]} | {mcn_summary['raw'][0.01]} |")
+    lines.append(f"| Holm-Bonferroni | {mcn_summary['holm'][0.05]} | {mcn_summary['holm'][0.01]} |")
+    lines.append(f"| Benjamini-Hochberg | {mcn_summary['bh'][0.05]} | {mcn_summary['bh'][0.01]} |")
+    lines.append("")
+    lines.append("Case-clustered permutation McNemar: "
+                 f"{mcn_case_summary['holm'][0.05]} pairs remain significant after "
+                 "Holm-Bonferroni.")
     lines.append("")
 
     lines.append("## 7. Consistency (3 repeats)")

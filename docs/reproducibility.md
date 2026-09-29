@@ -110,8 +110,8 @@ identical.
 | `error_taxonomy.csv` | error categories per model |
 | `red_flags.csv`, `human_red_flags.csv` | red-flag rates for models and for the references |
 | `bootstrap_ci.csv` | case-clustered 95 % CIs |
-| `paired_mcnemar.csv` | pairwise McNemar p-values |
-| `paired_mcnemar_case.csv` | pairwise McNemar p-values, case-clustered (case-level sign permutation) |
+| `paired_mcnemar.csv` | pairwise McNemar p-values: raw, Holm-Bonferroni and Benjamini-Hochberg |
+| `paired_mcnemar_case.csv` | pairwise McNemar p-values, case-clustered (case-level sign permutation): raw, Holm-Bonferroni and Benjamini-Hochberg |
 | `difficulty.csv` | accuracy by difficulty |
 | `consistency_quadrants.csv` | self-consistency analysis |
 | `model_agreement.csv` | inter-model agreement and ensemble |

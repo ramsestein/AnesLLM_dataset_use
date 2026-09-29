@@ -110,6 +110,18 @@ The clinician's own actions carry red flags at 0.032: Claude Opus 5.5, GPT-6 Sol
 | gemini-3.1-flash-lite | 0.170 [0.154, 0.189] | 0.362 [0.337, 0.386] |
 | medgemma:27b | 0.168 [0.151, 0.186] | 0.400 [0.372, 0.431] |
 
+### 6.1 Pairwise differences (McNemar, multiplicity-corrected)
+
+91 model pairs compared with the exact McNemar test on strict correctness. Multiplicity is accounted for with Holm-Bonferroni (family-wise error rate) and Benjamini-Hochberg (false-discovery rate); the full pairwise tables are `paired_mcnemar.csv` and the case-clustered sign-permutation version `paired_mcnemar_case.csv`.
+
+| correction | p/q < 0.05 | p/q < 0.01 |
+|---|---|---|
+| none (raw) | 71 | 68 |
+| Holm-Bonferroni | 59 | 52 |
+| Benjamini-Hochberg | 71 | 68 |
+
+Case-clustered permutation McNemar: 51 pairs remain significant after Holm-Bonferroni.
+
 ## 7. Consistency (3 repeats)
 
 | model | Fleiss κ | error rate stable | error rate unstable |

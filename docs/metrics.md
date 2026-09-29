@@ -73,8 +73,11 @@ taken with information not present in the data, not necessarily errors.
 
 - **Confidence intervals**: 95 % percentile bootstrap **clustered by case** (cases resampled
   with replacement, 1,000 iterations, seed 42).
-- **Paired comparisons**: McNemar test on strict correctness for every pair of models
-  (`results/analysis/paired_mcnemar.csv`).
+- **Paired comparisons**: exact McNemar test on strict correctness for every pair of
+  non-deterministic models (91 pairs). Multiplicity is accounted for with Holm-Bonferroni
+  (family-wise error rate) and Benjamini-Hochberg (false-discovery rate); raw, Holm and
+  BH-adjusted p-values are reported in `results/analysis/paired_mcnemar.csv` and, with
+  case-level sign-permutation clustering, in `results/analysis/paired_mcnemar_case.csv`.
 - **Difficulty**: strict accuracy stratified by the case difficulty label (`easy`, `medium`,
   `hard`; see the dataset documentation).
 
