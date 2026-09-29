@@ -1,0 +1,16 @@
+﻿system,outcome,n,n_events,sex_coef,sex_or,sex_se,sex_z,sex_p,unstable,cov_struct
+claude-haiku-4-5-20251001,contraindicated,3088,261,0.2079,1.231,0.1634,1.272,0.2035,0,robust
+claude-opus-4-8,contraindicated,3088,262,-0.0051,0.995,0.1808,-0.028,0.9773,0,robust
+claude-opus-5-5,contraindicated,3088,29,6.1378,463.025,3.276,1.874,0.061,1,robust
+deepseek-flash,contraindicated,3088,43,1.0443,2.841,0.5734,1.821,0.0685,1,robust
+deepseek-v4-pro,contraindicated,3088,65,0.8039,2.234,0.3955,2.033,0.0421,0,robust
+gemini-3.1-flash-lite,contraindicated,3088,526,0.1459,1.157,0.1606,0.908,0.3638,0,robust
+gemini-3.1-pro-preview,contraindicated,3088,91,0.1257,1.134,0.2937,0.428,0.6686,0,robust
+gpt-4o,contraindicated,3088,304,-0.1088,0.897,0.2062,-0.527,0.5979,0,robust
+gpt-5.4,contraindicated,3088,115,0.254,1.289,0.246,1.033,0.3018,0,robust
+gpt-5.4-mini,contraindicated,3088,361,-0.0268,0.974,0.17,-0.158,0.8746,0,robust
+gpt-6-sol,contraindicated,3088,33,1.6677,5.3,0.851,1.96,0.05,1,robust
+jev,contraindicated,3088,250,0.013,1.013,0.2062,0.063,0.9497,0,robust
+laya,contraindicated,3088,137,-0.1634,0.849,0.3354,-0.487,0.6261,0,robust
+medgemma:27b,contraindicated,3088,424,0.0389,1.04,0.1851,0.21,0.8337,0,robust
+anesthesiologist,contraindicated,3088,100,0.1157,1.123,0.3122,0.371,0.711,0,robust
