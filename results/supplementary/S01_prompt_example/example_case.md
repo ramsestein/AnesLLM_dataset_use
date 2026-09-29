@@ -1,9 +1,9 @@
-# S1. Ejemplo de caso presentado al modelo
+# S1. Example case shown to the model
 
 - window_id: `case1001_w13979` · case_id: `1001`
 - result_real: `reduce_hypnotic` · result_1: `reduce_opioid` · result_aux: `increase_hypnotic`
 
-El texto exacto que ve el modelo (la variable `{case}` del prompt):
+The exact text the model sees (the `{case}` variable in the prompt):
 
 ```text
 A 69-year-old male (62.8 kg, 166.5 cm, BMI 22.7, ASA 2) patient is undergoing Endovascular aneurysmal repair (Vascular, Open, General), elective.
@@ -18,8 +18,8 @@ Preoperative labs: hb 11.7 g/dL, hct 35.9 %, plt 352 K/uL, wbc 8.15 K/uL, na 140
 Recent course: Patient: age=69.0, sex=M, height=166.5, weight=62.8, bmi=22.7, asa=2.0, department=General surgery, opname=Endovascular aneurysmal repair. Comorbidities: HTN. Start of anesthesia.
 ```
 
-Opciones de respuesta (prompt de 5 opciones):
+Response options (5-option prompt):
 a) increase_hypnotic · b) reduce_hypnotic · c) increase_opioid · d) reduce_opioid · e) no_action
 
-Opciones de respuesta (prompt de 3 opciones, subgrupo no-opioide):
+Response options (3-option prompt, no-opioid subgroup):
 a) increase_hypnotic · b) reduce_hypnotic · c) no_action

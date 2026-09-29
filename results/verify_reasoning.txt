@@ -1,5 +1,5 @@
-# src/verify_reasoning.py — verificación empírica de razonamiento (n=10 por modelo)
-# Generado: 2026-09-28
+# src/verify_reasoning.py — empirical verification of reasoning (n=10 per model)
+# Generated: 2026-09-28
 
 model                          n  reasoning_ok  avg_reason  avg_total  conclusion
 ------------------------------------------------------------------------------------------

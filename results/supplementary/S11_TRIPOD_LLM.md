@@ -1,86 +1,86 @@
 # S11. TRIPOD-LLM reporting checklist
 
-Estudio: **AnesLLM** — benchmark de soporte a la decisión anestésica con modelos de lenguaje.
+Study: **AnesLLM** — a benchmark for anesthetic decision support with language models.
 
-Checklist adaptado de TRIPOD+AI / TRIPOD-LLM. Estado por ítem: **Sí** (reportado), **No** (no aplica / no se hizo), **Parcial**, o **—** (no reportado / pendiente). La columna "Dónde" apunta al material de este repositorio.
+Checklist adapted from TRIPOD+AI / TRIPOD-LLM. Item status: **Yes** (reported), **No** (not applicable / not done), **Partial**, or **—** (not reported / pending). The "Where" column points to the material in this repository.
 
-## A. Título y resumen
+## A. Title and abstract
 
-| # | Ítem | Estado | Dónde |
+| # | Item | Status | Where |
 |---|---|---|---|
-| 1 | El título/abstract identifica que es un modelo de IA (LLM) y la tarea clínica | Sí | `README.md`, `results/analysis/report.md` |
-| 2 | Se declara el objetivo (benchmark de decisión anestésica) y la población (quirófano, VitalDB) | Sí | `dataset/docs/dataset_design.md` §1–2 |
+| 1 | Title/abstract identifies it as an AI (LLM) model and the clinical task | Yes | `README.md`, `results/analysis/report.md` |
+| 2 | Objective (anesthetic-decision benchmark) and population (operating room, VitalDB) declared | Yes | `dataset/docs/dataset_design.md` §1–2 |
 
-## B. Introducción
+## B. Introduction
 
-| # | Ítem | Estado | Dónde |
+| # | Item | Status | Where |
 |---|---|---|---|
-| 3 | Contexto clínico y justificación | Sí | `dataset/docs/dataset_design.md`, `dataset_overview.md` |
-| 4 | Objetivo del estudio (comparar modelos sobre la tarea) | Sí | `results/analysis/report.md` |
+| 3 | Clinical context and rationale | Yes | `dataset/docs/dataset_design.md`, `dataset_overview.md` |
+| 4 | Study objective (compare models on the task) | Yes | `results/analysis/report.md` |
 
-## C. Métodos — datos
+## C. Methods — data
 
-| # | Ítem | Estado | Dónde |
+| # | Item | Status | Where |
 |---|---|---|---|
-| 5 | Fuente de datos (VitalDB, SNUH) | Sí | `dataset/docs/dataset_design.md` §1 |
-| 6 | Definición de la ventana de decisión (10 min vitales / 20 min historial) | Sí | `dataset/docs/dataset_design.md` §2 |
-| 7 | Vocabulario de acciones (5 clases + vasopressor como opción) | Sí | `dataset_overview.md` |
-| 8 | Criterios de inclusión/exclusión y curación de casos | Sí | `dataset/docs/audit_report.md` §1–9 |
-| 9 | Splits (train/dev/test) y cómo se estratificó | Sí | `dataset_overview.md`, `split_manifest.csv` |
-| 10 | Tamaño de la muestra y justificación (84 813 ventanas, 3 168 casos; partición de prueba: 149 casos / 3 424 ventanas, precisión ≈ ±0.02) | Sí | `dataset_overview.md`, `metrics.md` §6 |
-| 11 | Variables de entrada (280 campos) y diccionario | Sí | `S03_data_dictionary.csv` |
-| 12 | Ground truth (result_real) y referencias alternativas (result_1/result_aux) | Sí | `evaluation_guide.md` §2–3 |
-| 13 | Ausentes y su tratamiento | Sí | `S04_audit/missingness.csv`, `coverage_by_variable.csv` |
-| 14 | Fuga de información (auditoría) | Sí | `S04_audit/leakage.csv` |
-| 15 | Privacidad / k-anonimato | Parcial | `S04_audit/k_anonymity.csv` (identificadores directos presentes: `pt_caseid`, `pt_subjectid`) |
+| 5 | Data source (VitalDB, SNUH) | Yes | `dataset/docs/dataset_design.md` §1 |
+| 6 | Definition of the decision window (10 min vitals / 20 min history) | Yes | `dataset/docs/dataset_design.md` §2 |
+| 7 | Action vocabulary (5 classes + vasopressor as an option) | Yes | `dataset_overview.md` |
+| 8 | Inclusion/exclusion criteria and case curation | Yes | `dataset/docs/audit_report.md` §1–9 |
+| 9 | Splits (train/dev/test) and how stratification was done | Yes | `dataset_overview.md`, `split_manifest.csv` |
+| 10 | Sample size and justification (84,813 windows, 3,168 cases; test partition: 149 cases / 3,424 windows, precision ≈ ±0.02) | Yes | `dataset_overview.md`, `metrics.md` §6 |
+| 11 | Input variables (280 fields) and dictionary | Yes | `S03_data_dictionary.csv` |
+| 12 | Ground truth (result_real) and alternative references (result_1/result_aux) | Yes | `evaluation_guide.md` §2–3 |
+| 13 | Missing values and their handling | Yes | `S04_audit/missingness.csv`, `coverage_by_variable.csv` |
+| 14 | Data leakage (audit) | Yes | `S04_audit/leakage.csv` |
+| 15 | Privacy / k-anonymity | Partial | `S04_audit/k_anonymity.csv` (direct identifiers present: `pt_caseid`, `pt_subjectid`) |
 
-## D. Métodos — modelos
+## D. Methods — models
 
-| # | Ítem | Estado | Dónde |
+| # | Item | Status | Where |
 |---|---|---|---|
-| 16 | Identificadores de modelo, proveedor y versión | Sí | `S02_model_registry.csv` |
-| 17 | Prompt completo (instrucciones) | Sí | `S01_prompt_example/prompt_5_options.txt`, `prompt_3_options.txt` |
-| 18 | Ejemplo del caso presentado al modelo | Sí | `S01_prompt_example/example_case.md` |
-| 19 | Temperatura y parámetros de muestreo | Sí | `S02_model_registry.csv` |
-| 20 | Razonamiento verificado (tokens de thinking) | Sí | `S02_model_registry.csv` (método: `src/verify_reasoning.py`) |
-| 21 | Ajuste fino / adaptación al dominio | No | Los modelos se usan off-the-shelf, sin fine-tuning |
-| 22 | Fechas de evaluación | Sí | `S02_model_registry.csv` |
-| 23 | Modelos deterministas y clasificadores como baselines | Sí | `S10_deterministic_controllers/` |
-| 24 | Reproducibilidad (código) | Sí | `src/` (harness de evaluación) |
+| 16 | Model identifiers, provider and version | Yes | `S02_model_registry.csv` |
+| 17 | Full prompt (instructions) | Yes | `S01_prompt_example/prompt_5_options.txt`, `prompt_3_options.txt` |
+| 18 | Example of the case shown to the model | Yes | `S01_prompt_example/example_case.md` |
+| 19 | Temperature and sampling parameters | Yes | `S02_model_registry.csv` |
+| 20 | Verified reasoning (thinking tokens) | Yes | `S02_model_registry.csv` (method: `src/verify_reasoning.py`) |
+| 21 | Fine-tuning / domain adaptation | No | Models used off-the-shelf, no fine-tuning |
+| 22 | Evaluation dates | Yes | `S02_model_registry.csv` |
+| 23 | Deterministic models and classifiers as baselines | Yes | `S10_deterministic_controllers/` |
+| 24 | Reproducibility (code) | Yes | `src/` (evaluation harness) |
 
-## E. Métodos — evaluación
+## E. Methods — evaluation
 
-| # | Ítem | Estado | Dónde |
+| # | Item | Status | Where |
 |---|---|---|---|
-| 25 | Métricas principales (strict/consensus/plausible) | Sí | `results/analysis/report.md` §1 |
-| 26 | Métricas de clasificación (balanced acc, macro-F1, κ) | Sí | `S05_classification/classification.csv` |
-| 27 | Matrices de confusión | Sí | `S05_classification/confusion_*.csv` |
-| 28 | Taxonomía de errores | Sí | `S05_classification/error_taxonomy.csv` |
-| 29 | Red flags (acciones potencialmente dañinas) | Sí | `results/analysis/report.md` §5, `red_flags.csv` |
-| 30 | Rendimiento por dificultad | Sí | `S06_difficulty.csv` |
-| 31 | Consistencia entre repeticiones | Sí | `S07_consistency/consistency_quadrants.csv` |
-| 32 | Acuerdo entre modelos | Sí | `S07_consistency/model_agreement.csv` |
-| 33 | Comparaciones por pares (McNemar agrupado por caso, con corrección de multiplicidad) | Sí | `S09_paired_mcnemar.csv` |
-| 34 | Incertidumbre (IC por bootstrap) | Sí | `results/analysis/bootstrap_ci.csv`, `no_opioid_subgroup_ci.csv` |
-| 35 | Revisión clínica por 3 anestesistas (coautores, no independientes) | Sí | `S08_external_review/` (298 ventanas) |
-| 36 | Subgrupos (no-opioide) | Sí | `results/analysis/no_opioid_report.md` |
+| 25 | Main metrics (strict/consensus/plausible) | Yes | `results/analysis/report.md` §1 |
+| 26 | Classification metrics (balanced acc, macro-F1, κ) | Yes | `S05_classification/classification.csv` |
+| 27 | Confusion matrices | Yes | `S05_classification/confusion_*.csv` |
+| 28 | Error taxonomy | Yes | `S05_classification/error_taxonomy.csv` |
+| 29 | Red flags (potentially harmful actions) | Yes | `results/analysis/report.md` §5, `red_flags.csv` |
+| 30 | Performance by difficulty | Yes | `S06_difficulty.csv` |
+| 31 | Consistency across repeats | Yes | `S07_consistency/consistency_quadrants.csv` |
+| 32 | Inter-model agreement | Yes | `S07_consistency/model_agreement.csv` |
+| 33 | Pairwise comparisons (case-clustered McNemar, with multiplicity correction) | Yes | `S09_paired_mcnemar.csv` |
+| 34 | Uncertainty (bootstrap CIs) | Yes | `results/analysis/bootstrap_ci.csv`, `no_opioid_subgroup_ci.csv` |
+| 35 | Clinical review by 3 anesthesiologists (co-authors, not independent) | Yes | `S08_external_review/` (298 windows) |
+| 36 | Subgroups (no-opioid) | Yes | `results/analysis/no_opioid_report.md` |
 
-## F. Resultados
+## F. Results
 
-| # | Ítem | Estado | Dónde |
+| # | Item | Status | Where |
 |---|---|---|---|
-| 37 | Rendimiento por modelo y por referencia | Sí | `results/analysis/report.md` §1 |
-| 38 | Techo humano y suelos | Sí | `results/analysis/report.md` §2 |
-| 39 | Resultados de la validación externa | Sí | `S08_external_review/` |
+| 37 | Performance per model and per reference | Yes | `results/analysis/report.md` §1 |
+| 38 | Human ceiling and floors | Yes | `results/analysis/report.md` §2 |
+| 39 | External validation results | Yes | `S08_external_review/` |
 
-## G. Discusión y otra información
+## G. Discussion and other information
 
-| # | Ítem | Estado | Dónde |
+| # | Item | Status | Where |
 |---|---|---|---|
-| 40 | Limitaciones | Parcial | `dataset/docs/` y notas de `report.md` |
-| 41 | Implicaciones y uso previsto (soporte a la decisión, no autonomía) | Parcial | `README.md` |
-| 42 | Disponibilidad de código y datos | Parcial | código en `src/`; datos bajo licencia VitalDB |
-| 43 | Financiación / conflictos | Pendiente | Declarar por los autores |
-| 44 | Registro del estudio | Pendiente | Declarar si se registró (p. ej. OSF) |
+| 40 | Limitations | Partial | `dataset/docs/` and notes in `report.md` |
+| 41 | Implications and intended use (decision support, not autonomy) | Partial | `README.md` |
+| 42 | Availability of code and data | Partial | code in `src/`; data under VitalDB license |
+| 43 | Funding / conflicts | Pending | To be declared by the authors |
+| 44 | Study registration | Pending | Declare whether registered (e.g., OSF) |
 
-*Nota: los ítems marcados "Pendiente" o "Parcial" quedan pendientes de completar para la publicación.*
+*Note: items marked "Pending" or "Partial" remain to be completed for publication.*

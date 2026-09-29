@@ -1,133 +1,129 @@
-# Análisis 3 — Contrafactual de sexo (diseño previo a ejecución)
+# Analysis 3 — Sex counterfactual (design fixed before execution)
 
-> Documento de diseño fijado **antes** de ejecutar el experimento. Cualquier cambio de
-> método debe reflejarse aquí y en su propio commit.
+> Design document fixed **before** running the experiment. Any change of method must be
+> reflected here and in its own commit.
 
-## 1. Objetivo
+## 1. Objective
 
-Aislar el efecto de la **palabra** de sexo en el prompt («male» vs «female»), manteniendo
-idéntico el resto del caso. Si el cambio de sexo modifica la decisión del modelo, el efecto
-es atribuible a la mención del sexo y no a diferencias reales del paciente.
+Isolate the effect of the sex **word** in the prompt ("male" vs "female"), keeping the rest of
+the case identical. If changing the sex changes the model's decision, the effect is
+attributable to mentioning the sex, not to real differences in the patient.
 
-## 2. Ventanas
+## 2. Windows
 
-- **Principales**: las 438 ventanas de prueba con `PAM < 65` del conjunto de test tras la
-  exclusión de vasopressor (3.424 ventanas), donde está la señal del análisis previo.
-- **Secundarias**: 300 ventanas aleatorias (semilla a fijar), extraídas de los casos **no
-  excluidos** y **disjuntas** de las principales, para la tasa de cambio general y el acierto
-  de consenso.
+- **Primary**: the 438 test windows with `MAP < 65` in the post-vasopressor-exclusion test set
+  (3,424 windows), where the signal from the previous analysis is.
+- **Secondary**: 300 random windows (seed to be fixed), drawn from the **non-excluded** cases
+  and **disjoint** from the primary windows, for the general change rate and consensus accuracy.
 
-## 3. Exclusiones
+## 3. Exclusions
 
-Se excluyen los casos cuyo procedimiento (`pt_opname`) o diagnóstico (`pt_dx`) es propio de
-un sexo (mama, ginecología, próstata, testículo…), porque ahí el cambio produce un caso
-incoherente («varón con histerectomía»).
+Exclude cases whose procedure (`pt_opname`) or diagnosis (`pt_dx`) is sex-specific (breast,
+gynecology, prostate, testicle…), because there the swap produces an incoherent case ("male
+with hysterectomy").
 
-**Recuento (test, conjunto post-vasopressor):**
+**Counts (test, post-vasopressor set):**
 
-| Magnitud | n |
+| Quantity | n |
 |---|---|
-| Casos de test | 149 |
-| Ventanas totales | 3.424 |
-| Casos sexo-específicos | 22 |
-| Ventanas perdidas por exclusión | 412 |
-| Ventanas con PAM < 65 (totales) | 438 |
-| … de ellas en casos excluidos | 84 |
-| **Ventanas principales útiles** | **354** |
+| Test cases | 149 |
+| Total windows | 3,424 |
+| Sex-specific cases | 22 |
+| Windows lost to exclusion | 412 |
+| Windows with MAP < 65 (total) | 438 |
+| … of which in excluded cases | 84 |
+| **Usable primary windows** | **354** |
 
-*Nota: sobre la carpeta cruda de test (3.457 ventanas) hay 447 con PAM < 65; los 9 restantes
-son ventanas vasopressor excluidas del análisis.*
+*Note: the raw test folder (3,457 windows) has 447 with MAP < 65; the remaining 9 are
+vasopressor windows excluded from the analysis.*
 
-**Revisión manual de los 22 casos excluidos:** 20 de mama (mastectomía/cirugía conservadora,
-incluidos dos `Excision`/`Wide excision` con diagnóstico de mama y una `Hemihepatectomy` por
-metástasis de carcinoma mamario), 1 de próstata (`Radical prostatectomy`) y 1 de gangrena de
-Fournier (`case6180`, dx «Fournier's gangrene, male», periné/escroto). **Sin falsos positivos
-y sin escapes obvios** (no hay TURP, histerectomía, orquiectomía ni ginecología en test).
+**Manual review of the 22 excluded cases:** 20 breast (mastectomy/breast-conserving surgery,
+including two `Excision`/`Wide excision` with a breast diagnosis and one `Hemihepatectomy` for
+breast-carcinoma metastasis), 1 prostate (`Radical prostatectomy`) and 1 Fournier's gangrene
+(`case6180`, dx "Fournier's gangrene, male", perineum/scrotum). **No false positives and no
+obvious misses** (no TURP, hysterectomy, orchiectomy or gynecology in test).
 
-Criterio de sexo-especificidad (palabras clave sobre `pt_opname` + `pt_dx`, minúsculas):
+Sex-specificity criterion (keywords over `pt_opname` + `pt_dx`, lowercase):
 `breast, mastect, prostate, hysterect, oophor, salping, myomect, uterus, uterine, ovary,
 ovarian, endometr, cervix, vagin, vulv, tubal, testicular, testis, scrot, penis, fournier,
 turp, transurethral, orchi, orchid, vasect, circumcis, perineal`.
 
-> Se usa `cervix` (cérvix uterino) y **no** `cervical`, que en este dataset es casi siempre
-> cervical de cuello (columna cervical, disección ganglionar cervical, tiroides) y daría
-> falsos positivos. En test `cervical` no dispara ningún caso, así que el recuento no cambia.
+> Use `cervix` (uterine cervix) and **not** `cervical`, which in this dataset is almost always
+> neck cervical (cervical spine, cervical lymph node dissection, thyroid) and would cause
+> false positives. In test, `cervical` triggers no case, so the count does not change.
 
-## 4. Brazos
+## 4. Arms
 
-1. Versión **«male»** y versión **«female»** del mismo caso, ejecutadas a la vez y en **orden
-   aleatorio** (misma semilla), para que la variabilidad entre ejecuciones afecte igual a
-   ambas.
-2. **Opcional**: tercer brazo neutro sin sexo («a 54-year-old patient») para comprobar si la
-   palabra importa en sí misma, no solo la dirección del sexo.
+1. A **"male"** and a **"female"** version of the same case, run together and in **random
+   order** (same seed), so run-to-run variability affects both equally.
+2. **Optional**: a third, sex-neutral arm ("a 54-year-old patient") to test whether the word
+   matters in itself, not just the direction of the sex.
 
-## 5. Modelos
+## 5. Models
 
-- **Principales (los 5 que razonan)**: `deepseek-v4-pro`, `deepseek-flash`,
+- **Primary (the 5 that reason)**: `deepseek-v4-pro`, `deepseek-flash`,
   `gemini-3.1-pro-preview`, `gpt-6-sol`, `claude-opus-5-5`.
-- **Contraste sin razonamiento (opcional)**: `opus-4-8`, `gpt-5.4`.
+- **No-reasoning contrast (optional)**: `opus-4-8`, `gpt-5.4`.
 
-## 6. Resultados
+## 6. Results
 
-### Principal (agrupado, los 5 modelos)
-En las 354 ventanas útiles con `PAM < 65`: efecto global de la versión («female» vs «male»)
-sobre la proporción de «increase_hypnotic», combinando los 5 modelos y **estratificado por
-modelo** — **Mantel-Haenszel** (cada ventana como estrato apareado) o **regresión logística
-condicional con la ventana como estrato**. Motivo de potencia: `opus-5-5` propone
-«increase_hypnotic» en ≈ 8 % de estas ventanas (~28 por brazo), pocos pares discordantes; el
-McNemar por modelo solo detectaría un efecto grande.
+### Primary (pooled, all 5 models)
+In the 354 usable windows with `MAP < 65`: the overall effect of the version ("female" vs
+"male") on the proportion of "increase_hypnotic", combining the 5 models and **stratified by
+model** — **Mantel-Haenszel** (each window as a paired stratum) or **conditional logistic
+regression with the window as the stratum**. Power rationale: `opus-5-5` proposes
+"increase_hypnotic" in ≈ 8 % of these windows (~28 per arm), few discordant pairs; a
+per-model McNemar would only detect a large effect.
 
-### Secundario (por modelo)
-**McNemar exacto por modelo** sobre las mismas ventanas, con corrección de **Holm entre los
-5 modelos**.
+### Secondary (per model)
+**Exact McNemar per model** on the same windows, with **Holm** correction across the 5 models.
 
-### Otras métricas secundarias
-- Proporción de **cualquier acción contraindicada** (red flag) por versión.
-- Proporción de ventanas en que **cambia la acción** entre versiones y **dirección** del cambio.
-- **Acierto de consenso** por versión.
+### Other secondary metrics
+- Proportion of **any contraindicated action** (red flag) by version.
+- Proportion of windows where the **action changes** between versions and the **direction** of
+  the change.
+- **Consensus accuracy** by version.
 
-## 7. Coste estimado
+## 7. Estimated cost
 
-| Configuración | Llamadas |
+| Configuration | Calls |
 |---|---|
-| 740 ventanas × 2 versiones × 5 modelos | ≈ 7.400 |
-| + brazo neutro | ≈ 11.000 |
+| 740 windows × 2 versions × 5 models | ≈ 7,400 |
+| + neutral arm | ≈ 11,000 |
 
-## 8. Cautelas a declarar
+## 8. Caveats to declare
 
-- El **peso y la talla no cambian**: el cambio aísla la palabra, no un paciente del otro sexo
-  real. Cualquier diferencia observada no equivale a disparidad clínica.
-- Con 149 casos, algunas ventanas comparten caso; la inferencia debe agruparse por caso si se
-  comparan tasas entre versiones más allá del McNemar por pares.
-- **El sexo solo aparece en la cabecera del caso** («N-year-old male/female», en
-  `render_case`). Comprobado sobre los casos generados: la única fuga fuera de la cabecera es
-  `case6180` («Fournier's gangrene, male» en `pt_dx`), que es sexo-específico y queda
-  excluido. Tras la exclusión, ningún caso restante contiene «male / female / woman / she /
-  her / his» fuera de la cabecera.
+- **Weight and height do not change**: the swap isolates the word, not a real patient of the
+  other sex. Any observed difference is not equivalent to clinical disparity.
+- With 149 cases, some windows share a case; inference must be case-clustered when comparing
+  rates between versions beyond the paired McNemar.
+- **Sex appears only in the case header** ("N-year-old male/female", in `render_case`).
+  Checked on the generated cases: the only leak outside the header is `case6180` ("Fournier's
+  gangrene, male" in `pt_dx`), which is sex-specific and excluded. After exclusion, no
+  remaining case contains "male / female / woman / she / her / his" outside the header.
 
-## 9. Relación con el análisis ajustado (GEE)
+## 9. Relation to the adjusted analysis (GEE)
 
-El GEE de acción contraindicada **añadiendo peso y talla** (ver `sex_adjusted.md` §2) solo es
-informativo para `deepseek-v4-pro`: su efecto del sexo (OR 2.23, p = 0.042) **desaparece** al
-ajustar por antropometría (OR 1.26, p = 0.71). En `opus-5-5` (29 eventos) y `gpt-6-sol`
-(33 eventos) el GEE queda marcado como inestable y **no puede decir nada**, ni a favor ni en
-contra del canal.
+The GEE of contraindicated actions **adding weight and height** (see `sex_adjusted.md` §2) is
+informative only for `deepseek-v4-pro`: its sex effect (OR 2.23, p = 0.042) **disappears** when
+adjusting for anthropometry (OR 1.26, p = 0.71). For `opus-5-5` (29 events) and `gpt-6-sol`
+(33 events) the GEE is marked unstable and **cannot say anything**, for or against the channel.
 
-Para esos dos, una estimación ajustada exigiría regresión logística **penalizada (Firth)** o
-un **modelo reducido** (`sexo + PAM + BIS + peso`); aun así, con ~29 eventos seguirá siendo
-frágil. El análisis 3 queda como la **única vía** para responder por `opus-5-5` y `gpt-6-sol`.
+For those two, an adjusted estimate would require **penalized (Firth) logistic regression** or
+a **reduced model** (`sex + MAP + BIS + weight`); even so, with ~29 events it will remain
+fragile. Analysis 3 remains the **only way** to answer for `opus-5-5` and `gpt-6-sol`.
 
-Coherencia con el contrafactual: como en el caso cambiado el peso y la talla **no se tocan**,
-si el canal es la antropometría el análisis 3 saldrá **nulo**; si es la palabra, saldrá
-**positivo**.
+Consistency with the counterfactual: since in the swapped case weight and height are **not
+touched**, if the channel is anthropometry analysis 3 will come out **null**; if it is the
+word, it will come out **positive**.
 
-## 10. Decisiones por fijar antes de ejecutar
+## 10. Decisions to fix before executing
 
-- [ ] Semilla y procedimiento exacto de aleatorización del orden de brazos.
-- [ ] N final: 354 principales + 300 secundarias disjuntas (de casos no excluidos).
-- [ ] Fijar el análisis principal agrupado (Mantel-Haenszel vs regresión logística condicional
-      con la ventana como estrato) antes de ejecutar.
-- [ ] Incluir o no el brazo neutro y los 2 modelos sin razonamiento.
-- [ ] Lista definitiva de palabras clave de exclusión (revisión manual de 22 casos ya hecha).
-- [ ] Reutilizar el prompt existente (`src/llm/prompt.txt`) o crear uno con sexo inyectado,
-      garantizando que el sexo solo aparezca en la cabecera.
+- [ ] Seed and exact procedure for randomizing the arm order.
+- [ ] Final n: 354 primary + 300 disjoint secondary (from non-excluded cases).
+- [ ] Fix the primary pooled analysis (Mantel-Haenszel vs conditional logistic regression with
+      the window as the stratum) before executing.
+- [ ] Include or not the neutral arm and the 2 no-reasoning models.
+- [ ] Definitive exclusion keyword list (manual review of the 22 cases already done).
+- [ ] Reuse the existing prompt (`src/llm/prompt.txt`) or create one with the sex injected,
+      ensuring sex appears only in the header.
