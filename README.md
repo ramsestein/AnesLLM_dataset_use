@@ -115,5 +115,5 @@ de-identified VitalDB dataset.
 
 ## License
 
-Code: [LICENSE_CODE] (see [LICENSE](LICENSE)). The dataset is distributed separately under the
+Code: MIT (see [LICENSE](LICENSE)). The dataset is distributed separately under the
 terms stated on Zenodo/PhysioNet, which must be compatible with the VitalDB data license.

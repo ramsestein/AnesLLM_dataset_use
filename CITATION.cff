@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this benchmark or its results, please cite it as below."
+title: "AnesLLM benchmark: evaluating LLMs on real intraoperative anesthesia decisions"
+abstract: >-
+  A benchmark that asks language models to choose the next anesthetic adjustment
+  (hypnotic / opioid / no action) in real intraoperative situations derived from
+  VitalDB, and compares their choices with the actions anesthesiologists actually
+  took.
+authors:
+  - family-names: Cayuela
+    given-names: Rosalía
+  - family-names: Marrero García
+    given-names: Ramses
+  - family-names: Zhu
+    given-names: Yihao
+  - family-names: Espinós
+    given-names: Carles
+  - family-names: Pregnolato
+    given-names: Sandro
+  - family-names: Ferrando
+    given-names: Carlos
+repository-code: "https://github.com/ramsestein/AnesLLM_dataset_use"
+license: MIT
+date-released: "2026-09-29"
