@@ -1,0 +1,11 @@
+﻿sex,action,n,pct_within_sex
+M,increase_hypnotic,166,8.8
+M,reduce_hypnotic,243,12.88
+M,increase_opioid,419,22.22
+M,reduce_opioid,514,27.25
+M,no_action,544,28.84
+F,increase_hypnotic,122,7.93
+F,reduce_hypnotic,208,13.52
+F,increase_opioid,403,26.2
+F,reduce_opioid,420,27.31
+F,no_action,385,25.03

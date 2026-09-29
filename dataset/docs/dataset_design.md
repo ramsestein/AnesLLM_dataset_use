@@ -31,7 +31,8 @@ the one being acted upon.
 
 The raw signal of interest is the **infusion rate of the two drug families**:
 
-- hypnotics (propofol, sevoflurane),
+- hypnotics (propofol; the volatile hypnotic sevoflurane is tracked but excluded from the
+  ground-truth action — see §2.3),
 - opioids (remifentanil).
 
 A ground-truth action is the *direction of change* of a drug infusion at the decision point:
@@ -52,9 +53,12 @@ canonical classes above. Two simplifications were applied:
 - **`vasopressor`** is kept as a *possible option* (a recommendation system should be able to
   propose it) but removed as a ground-truth class, because vasopressor management is a distinct
   problem with different pharmacology.
-- **Ventilation actions** (FiO₂, PEEP, tidal volume, respiratory rate, volatile-agent changes)
-  are removed from both options and ground truth, scoping the dataset to hypnotic/opioid
-  titration.
+- **Ventilation actions** (FiO₂, PEEP, tidal volume, respiratory rate) are removed from both
+  options and ground truth, scoping the dataset to hypnotic/opioid titration.
+- **Volatile-agent changes** (sevoflurane, a volatile hypnotic) are removed the same way: they
+  were detected as a separate `increase_volatile` / `reduce_volatile` category and excluded
+  from both options and ground truth, so the `increase_hypnotic` / `reduce_hypnotic` action
+  reflects propofol changes only.
 
 After filtering, the dataset contains **84,813 windows** from **3,168 cases**.
 

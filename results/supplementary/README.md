@@ -15,6 +15,7 @@ Index of supplementary materials. Each item is self-contained within this folder
 | **S9** | Pairwise comparisons (case-clustered McNemar: case-level sign permutation, with Holm-Bonferroni and Benjamini-Hochberg multiplicity correction) | `S09_paired_mcnemar.csv` |
 | **S10** | Description of the deterministic controllers and their parameters | `S10_deterministic_controllers/` (`README.md`, `clinical_params.json`, `policies/*.py`) |
 | **S11** | TRIPOD-LLM reporting checklist | `S11_TRIPOD_LLM.md` |
+| **S12** | Sex and age subgroup analyses: per-sex performance and differences, sex-adjusted (GEE), sex counterfactual (analysis 3), sex opportunity, real actions by sex, and age profile | `S12_sex_age/` |
 
 ## Notes
 
