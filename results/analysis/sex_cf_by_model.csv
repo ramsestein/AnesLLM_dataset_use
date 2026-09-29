@@ -1,0 +1,6 @@
+model,n_windows,n_pairs_valid,n_pairs_excluded,b,c,discordant,OR,mcnemar_p_exact,mcnemar_p_holm
+claude-opus-5-5,354,354,0,1,0,1,inf,1.000000,1.000000
+gpt-6-sol,354,354,0,2,0,2,inf,0.500000,1.000000
+gemini-3.1-pro-preview,354,354,0,7,3,10,2.3333,0.343750,1.000000
+deepseek-v4-pro,354,354,0,6,6,12,1.0000,1.000000,1.000000
+deepseek-flash,354,354,0,9,2,11,4.5000,0.065430,0.327148

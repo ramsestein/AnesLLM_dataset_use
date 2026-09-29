@@ -1,0 +1,2 @@
+n_cases,n_windows,n_pairs_valid,n_pairs_excluded,b,c,discordant,OR,OR_CI_lo,OR_CI_hi,T_obs,p_perm_two_sided,n_permutations
+90,354,1770,0,25,11,36,2.2727,1.0000,5.8333,14,0.059694,10000
