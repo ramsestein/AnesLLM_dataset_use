@@ -1,0 +1,9 @@
+﻿sex,rule,n_windows,n_condition,prevalence
+M,incr_hypnotic_bis_lt40,1886,693,0.3674
+M,incr_hypnotic_map_lt65,1886,203,0.1076
+M,incr_opioid_hr_lt50,1886,56,0.0297
+M,reduce_hypnotic_bis_gt60,1886,191,0.1013
+F,incr_hypnotic_bis_lt40,1538,521,0.3388
+F,incr_hypnotic_map_lt65,1538,235,0.1528
+F,incr_opioid_hr_lt50,1538,96,0.0624
+F,reduce_hypnotic_bis_gt60,1538,223,0.145
