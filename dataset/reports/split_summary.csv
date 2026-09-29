@@ -1,0 +1,5 @@
+split,n_cases,n_windows,windows_per_case_mean,windows_per_case_median,windows_per_case_min,windows_per_case_max
+dev,25,423,16.92,16.00,3,31
+train,2994,80933,27.03,23.00,3,130
+test,149,3457,23.20,20.00,4,108
+overall,3168,84813,26.77,23.00,3,130

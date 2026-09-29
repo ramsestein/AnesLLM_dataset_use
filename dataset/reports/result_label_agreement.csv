@@ -1,0 +1,5 @@
+split,n_windows,top1_accuracy,top2_recall,result1_equals_aux,real_in_result1,real_in_result_aux
+dev,423,0.4941,0.7376,0.0000,0.4941,0.2435
+train,80933,0.5578,0.8043,0.0000,0.5578,0.2464
+test,3457,0.5684,0.8131,0.0000,0.5684,0.2447
+overall,84813,0.5580,0.8043,0.0000,0.5580,0.2463
