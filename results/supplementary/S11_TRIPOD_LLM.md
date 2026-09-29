@@ -60,7 +60,7 @@ Checklist adaptado de TRIPOD+AI / TRIPOD-LLM. Estado por ítem: **Sí** (reporta
 | 30 | Rendimiento por dificultad | Sí | `S06_difficulty.csv` |
 | 31 | Consistencia entre repeticiones | Sí | `S07_consistency/consistency_quadrants.csv` |
 | 32 | Acuerdo entre modelos | Sí | `S07_consistency/model_agreement.csv` |
-| 33 | Comparaciones por pares (McNemar) | Sí | `S09_paired_mcnemar.csv` |
+| 33 | Comparaciones por pares (McNemar agrupado por caso, con corrección de multiplicidad) | Sí | `S09_paired_mcnemar.csv` |
 | 34 | Incertidumbre (IC por bootstrap) | Sí | `results/analysis/bootstrap_ci.csv`, `no_opioid_subgroup_ci.csv` |
 | 35 | Revisión clínica por 3 anestesistas (coautores, no independientes) | Sí | `S08_external_review/` (298 ventanas) |
 | 36 | Subgrupos (no-opioide) | Sí | `results/analysis/no_opioid_report.md` |

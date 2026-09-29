@@ -12,7 +12,7 @@
 | **S6** | Rendimiento por dificultad | `S06_difficulty.csv` |
 | **S7** | Consistencia entre repeticiones y acuerdo entre modelos | `S07_consistency/` (`consistency_quadrants.csv`, `model_agreement.csv`) |
 | **S8** | Revisión externa: acuerdo entre revisores y aprobación de cada referencia y estrategia | `S08_external_review/` (`reviewers_agreement.csv`, `reviewers_appropriateness.csv`, `human_concordance_redo.csv`) |
-| **S9** | Comparaciones por pares (McNemar, con corrección de multiplicidad Holm-Bonferroni y Benjamini-Hochberg) | `S09_paired_mcnemar.csv` |
+| **S9** | Comparaciones por pares (McNemar agrupado por caso: permutación de signos a nivel de caso, con corrección de multiplicidad Holm-Bonferroni y Benjamini-Hochberg) | `S09_paired_mcnemar.csv` |
 | **S10** | Descripción de los controladores deterministas y de sus parámetros | `S10_deterministic_controllers/` (`README.md`, `clinical_params.json`, `policies/*.py`) |
 | **S11** | Lista de verificación TRIPOD-LLM | `S11_TRIPOD_LLM.md` |
 
