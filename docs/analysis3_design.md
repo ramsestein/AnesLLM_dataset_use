@@ -56,40 +56,60 @@ turp, transurethral, orchi, orchid, vasect, circumcis, perineal`.
 
 1. A **"male"** and a **"female"** version of the same case, run together and in **random
    order** (same seed), so run-to-run variability affects both equally.
-2. **Optional**: a third, sex-neutral arm ("a 54-year-old patient") to test whether the word
-   matters in itself, not just the direction of the sex.
+2. **No neutral arm** ("a 54-year-old patient") is included.
+
+Seed **42** is used for everything (secondary window sample and the random order of the arms).
 
 ## 5. Models
 
-- **Primary (the 5 that reason)**: `deepseek-v4-pro`, `deepseek-flash`,
-  `gemini-3.1-pro-preview`, `gpt-6-sol`, `claude-opus-5-5`.
-- **No-reasoning contrast (optional)**: `opus-4-8`, `gpt-5.4`.
+Only the **5 models that reason**, with the same identifiers, backend and configuration as in
+`S02_model_registry.csv`:
+
+| model | backend |
+|---|---|
+| `claude-opus-5-5` | claude |
+| `gpt-6-sol` | openai |
+| `gemini-3.1-pro-preview` | gemini |
+| `deepseek-v4-pro` | deepseek |
+| `deepseek-flash` | deepseek |
+
+No no-reasoning contrast models (`opus-4-8`, `gpt-5.4`) are included.
 
 ## 6. Results
 
 ### Primary (pooled, all 5 models)
-In the 354 usable windows with `MAP < 65`: the overall effect of the version ("female" vs
-"male") on the proportion of "increase_hypnotic", combining the 5 models and **stratified by
-model** — **Mantel-Haenszel** (each window as a paired stratum) or **conditional logistic
-regression with the window as the stratum**. Power rationale: `opus-5-5` proposes
-"increase_hypnotic" in ≈ 8 % of these windows (~28 per arm), few discordant pairs; a
-per-model McNemar would only detect a large effect.
+In the 354 usable windows with `MAP < 65`, the unit of analysis is the **case**. For each case
+we sum, over the 5 models, the **net discordance**: the number of (window, version) pairs in
+which the "female" version proposes `increase_hypnotic` and the "male" version does not, minus
+the pairs in the opposite direction. The total observed statistic is the sum over cases.
+
+- **Inference**: sign permutation test at the **case** level (the sign of each case's net
+  discordance is flipped at random), **10,000 permutations, seed 42, two-sided, +1
+  correction**.
+- **Effect size**: pooled paired odds ratio **Σb/Σc** (b = female-proposes / male-does-not
+  discordant pairs, c = the opposite), with a **95 % CI by case-clustered bootstrap** (1,000
+  resamples of cases, seed 42).
 
 ### Secondary (per model)
-**Exact McNemar per model** on the same windows, with **Holm** correction across the 5 models.
+**Exact McNemar per model** on the 354 primary windows, with **Holm** correction across the 5
+models.
 
-### Other secondary metrics
-- Proportion of **any contraindicated action** (red flag) by version.
-- Proportion of windows where the **action changes** between versions and the **direction** of
-  the change.
-- **Consensus accuracy** by version.
+### Other secondary metrics (primary and secondary windows, separately)
+- Proportion of **any contraindicated action** (same 4 `RED_FLAGS` rules as in `src/analyze.py`)
+  by version.
+- Proportion of windows where the **action changes** between versions and the **direction
+  matrix** of the change.
+- **Consensus accuracy** (agreement with `result_1`, the consensus reference) by version.
+
+### Invalid responses
+If a (window, version) pair is missing either of the two responses, the pair is **excluded**;
+the number of excluded pairs is reported **per model**.
 
 ## 7. Estimated cost
 
 | Configuration | Calls |
 |---|---|
-| 740 windows × 2 versions × 5 models | ≈ 7,400 |
-| + neutral arm | ≈ 11,000 |
+| (354 primary + 300 secondary) windows × 2 versions × 5 models | ≈ 6,540 |
 
 ## 8. Caveats to declare
 
@@ -117,13 +137,27 @@ Consistency with the counterfactual: since in the swapped case weight and height
 touched**, if the channel is anthropometry analysis 3 will come out **null**; if it is the
 word, it will come out **positive**.
 
-## 10. Decisions to fix before executing
+## 10. Decisions fixed before executing
 
-- [ ] Seed and exact procedure for randomizing the arm order.
-- [ ] Final n: 354 primary + 300 disjoint secondary (from non-excluded cases).
-- [ ] Fix the primary pooled analysis (Mantel-Haenszel vs conditional logistic regression with
-      the window as the stratum) before executing.
-- [ ] Include or not the neutral arm and the 2 no-reasoning models.
-- [ ] Definitive exclusion keyword list (manual review of the 22 cases already done).
-- [ ] Reuse the existing prompt (`src/llm/prompt.txt`) or create one with the sex injected,
-      ensuring sex appears only in the header.
+- [x] **Seed**: 42 for everything (secondary window sample and random arm order).
+- [x] **Final n**: 354 primary (`MAP < 65`, non-sex-specific cases) + 300 disjoint secondary
+      (from non-excluded cases). Cost ≈ 6,540 calls.
+- [x] **Primary pooled analysis**: per-case sum over the 5 models of the net discordance
+      (female proposes `increase_hypnotic` / male does not, minus the opposite); sign
+      permutation test at the case level (10,000 permutations, seed 42, two-sided, +1
+      correction). Effect size: pooled paired OR **Σb/Σc** with 95 % CI by case-clustered
+      bootstrap (1,000, seed 42).
+- [x] **Secondary**: exact McNemar per model on the primary windows, Holm across the 5 models.
+- [x] **Other secondaries** (primary and secondary separately): any contraindicated action
+      (same 4 `RED_FLAGS` rules), change rate + direction matrix, consensus accuracy by version.
+- [x] **No neutral arm**, **no no-reasoning models**.
+- [x] **Exclusion keyword list**: `breast, mastect, prostate, hysterect, oophor, salping,
+      myomect, uterus, uterine, ovary, ovarian, endometr, cervix, vagin, vulv, tubal,
+      testicular, testis, scrot, penis, fournier, turp, transurethral, orchi, orchid, vasect,
+      circumcis, perineal` (on `pt_opname` + `pt_dx`, lowercase).
+- [x] **Prompt**: reuse `src/llm/prompt.txt`; sex is injected only via `pt_sex` in `render_case`,
+      so it appears only in the header.
+- [x] **Invalid responses**: exclude the pair if either of the two responses is missing;
+      report the excluded n per model.
+- [x] **The result will be published whatever it is**; a null result does not demonstrate the
+      absence of an effect.
