@@ -1,0 +1,4 @@
+﻿split,n_cases,age_min,age_median,age_max,age_mean,age_sd,pediatric_cases_lt18,pediatric_pct
+train,2994,6.0,59.0,92.0,57.8,14.4,10,0.3
+dev,25,39.0,58.0,75.0,56.1,11.2,0,0.0
+test,149,23.0,58.0,88.0,57.4,14.4,0,0.0
